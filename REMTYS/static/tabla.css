@@ -148,8 +148,8 @@
 
 /* ====== ENCABEZADOS DE TABLA ====== */
 .table-header th {
-    background: linear-gradient(135deg, #585958 0%, #404383 100%); /* Gray a Purple institucional */
-    color: #ffffff;
+    background: #ffffff; /* Fondo blanco */
+    color: #585958; /* Gray institucional para el texto */
     font-weight: 700;
     padding: 18px 20px;
     text-align: left;
@@ -159,12 +159,13 @@
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    border-right: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid #f1f5f9;
     font-family: 'Newark', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-bottom: 2px solid #e2e8f0;
 }
 
 .table-header th:hover {
-    background: linear-gradient(135deg, #404383 0%, #585958 100%);
+    background: #ffffff; /* Mantiene el fondo blanco */
     transform: translateY(-1px);
 }
 
@@ -196,10 +197,8 @@
 }
 
 .table-row:hover {
-    background: linear-gradient(135deg, #79b0cc 20%, #56858d 100%); /* Teal institucional */
     transform: translateX(4px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    color: white;
 }
 
 .table-row td {
