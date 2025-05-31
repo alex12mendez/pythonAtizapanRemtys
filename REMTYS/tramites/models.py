@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class ClasificacionTramites(models.Model):
@@ -9,11 +9,10 @@ class ClasificacionTramites(models.Model):
     imagen = models.ImageField(upload_to='imagenes/', null=True, blank=True)
 
     class Meta:
-        db_table = 'clasificacion_tramites'  # <-- aquí defines el nombre de la tabla manualmente
+        db_table = 'clasificacion_tramites'
 
     def __str__(self):
         return self.nombre
-
 
 
 class PerfilUsuario(models.Model):
@@ -22,6 +21,19 @@ class PerfilUsuario(models.Model):
 
     def __str__(self):
         return f'Perfil de {self.user.username}'
+
+
+# Signal para crear PerfilUsuario automáticamente cuando se crea un User
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        PerfilUsuario.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'perfilusuario'):
+        instance.perfilusuario.save()
 
 
 class Tramite(models.Model):
@@ -37,6 +49,7 @@ class Tramite(models.Model):
 
     def __str__(self):
         return self.nombre
+
 
 class DetalleTramite(models.Model):
     tramite = models.OneToOneField(Tramite, on_delete=models.CASCADE)

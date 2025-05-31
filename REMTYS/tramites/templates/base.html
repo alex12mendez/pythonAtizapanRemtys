@@ -10,10 +10,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'tabla.css' %}"> 
     <script src="{% static 'table.js' %}"></script>
+ <!-- Header top bar   <script src="{% static 'seguridad.js' %}"></script>--> 
     <link rel="stylesheet" href="{% static 'tablastramites.css' %}"> 
     
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
     <!-- Header top bar -->
@@ -38,7 +40,15 @@
     <!-- Gradient bar after logo -->
     <div class="gradient-bar"></div>
 
-<!-- Contenido dinámico -->
+{% if user.is_authenticated %}
+    <div class="user-info">
+        <span>Bienvenido, {{ user.first_name|default:user.username }}</span>
+        {% if user.is_staff %}
+            <span class="admin-badge">Admin</span>
+        {% endif %}
+        <a href="{% url 'logout' %}" class="logout-link">Cerrar Sesión</a>
+    </div>
+{% endif %}
 <main>
     {% block content %}
     {% endblock %}
@@ -91,5 +101,10 @@
 </footer>
 
 {% block scripts %}{% endblock %}
+
+
+
+
+
 </body>
 </html>

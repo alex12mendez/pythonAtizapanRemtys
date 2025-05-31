@@ -1,6 +1,7 @@
 # Agrega esto en tu admin.py para manejar los modelos
 from django.contrib import admin
 from .models import ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 @admin.register(ClasificacionTramites)
 class ClasificacionTramitesAdmin(admin.ModelAdmin):
@@ -26,3 +27,12 @@ class DetallePerfilUsuario(admin.ModelAdmin):
      list_display = ('user', 'clasificacion')
      search_fields = ('user__username', 'clasificacion__nombre')        
      list_filter = ('clasificacion',)
+     
+class PerfilUsuarioInline(admin.StackedInline):
+    model = PerfilUsuario
+    can_delete = False
+    verbose_name_plural = 'Perfil'
+
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (PerfilUsuarioInline,)     
