@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tramite.nombre }} | Detalle del Trámite | REMTYS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header del trámite -->
+    <div class="tramite-header">
+        <h1>{{ tramite.nombre }}</h1>
+        <div class="tramite-status">
+            <span class="status-badge {% if tramite.estatus == 'Activo' %}status-active{% else %}status-inactive{% endif %}">
+                {{ tramite.estatus }}
+            </span>
+        </div>
+    </div>
+    
+    <!-- Menú de navegación lateral -->
+    <div class="navigation-menu">
+        <nav class="nav-sidebar">
+            <ul class="nav-list">
+                <li><a href="#informacion-tramite" class="nav-link active">Información del Trámite</a></li>
+                <li><a href="#modalidades-requisitos" class="nav-link">Modalidades y Requisitos</a></li>
+                <li><a href="#costos" class="nav-link">Costos</a></li>
+                <li><a href="#fundamento-juridico" class="nav-link">Fundamento Jurídico</a></li>
+                <li><a href="#archivos-anexos" class="nav-link">Archivos Anexos</a></li>
+                <li><a href="#informacion-adicional" class="nav-link">Información Adicional</a></li>
+                <li><a href="#tramites-relacionados" class="nav-link">Trámites Relacionados</a></li>
+                <li><a href="#oficinas-atencion" class="nav-link">Oficinas de Atención</a></li>
+            </ul>
+        </nav>
+    </div>
+    
+    <!-- Contenido principal -->
+    <div class="main-content-wrapper">
+        {% if detalle %}
+        <!-- Información básica del trámite -->
+        <div class="detalle-container section" id="informacion-tramite">
+            <div class="info-section">
+                <h2>Información del Trámite</h2>
+                
+                <table class="form-table">
+                    <tr>
+                        <td>TIPO</td>
+                        <td><span class="highlight">{{ detalle.clasificacion|default:"" }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Unidad Administrativa:</td>
+                        <td><strong>{{ detalle.unidad_administrativa|default:"" }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Descripción del Trámite/Servicio:</td>
+                        <td>{{ detalle.descripcion_servicio|default:"" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Clasificación:</td>
+                        <td><span class="badge badge-online">{{ detalle.clasificacion|default:"" }}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Medio(s) para presentar el Trámite/Servicio:</td>
+                        <td>
+        <div class="medios-container">
+            {% if detalle.medios_presentacion %}
+
+                {% if detalle.medios_presentacion|length > 10 %}
+                    <!-- Es probable que sea un string, no una lista -->
+                    <span class="badge badge-medio">{{ detalle.medios_presentacion }}</span>
+                {% else %}
+                    {% for medio in detalle.medios_presentacion %}
+                        <span class="badge badge-medio">{{ medio }}</span>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Documento a obtener:</td>
+                        <td><strong>{{ detalle.documento_obtenido|default:"" }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Criterios de resolución:</td>
+                        <td>{{ detalle.criterios_resolucion|default:"" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Requiere Inspección o Verificación:</td>
+                        <td><span class="badge {% if detalle.requiere_inspeccion %}badge-success{% else %}badge-danger{% endif %}">{% if detalle.requiere_inspeccion %}Sí{% else %}No{% endif %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Objetivo de la Inspección o Verificación:</td>
+                        <td>{% if detalle.requiere_inspeccion %}{{ detalle.objetivo_inspeccion|default:"" }}{% else %}<span style="color: #757575;">N/A</span>{% endif %}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Secciones adicionales -->
+        <div class="detalle-container section" id="modalidades-requisitos">
+            <div class="info-section">
+                <h2>Modalidades y Requisitos</h2>
+                <div class="main-content">
+                    <p>Información sobre las modalidades y requisitos para presentar la denuncia ciudadana.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="costos">
+            <div class="info-section">
+                <h2>Costos</h2>
+                <div class="main-content">
+                    <p>El servicio es gratuito. No tiene costo alguno para el ciudadano.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="fundamento-juridico">
+            <div class="info-section">
+                <h2>Fundamento Jurídico</h2>
+                <div class="main-content">
+                    <p>Base legal y normativa que sustenta este trámite y servicio.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="archivos-anexos">
+            <div class="info-section">
+                <h2>Archivos Anexos</h2>
+                <div class="main-content">
+                    <p>Documentos y formatos relacionados con el trámite.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="informacion-adicional">
+            <div class="info-section">
+                <h2>Información Adicional</h2>
+                <div class="main-content">
+                    <p>Datos complementarios sobre el proceso y procedimientos.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="tramites-relacionados">
+            <div class="info-section">
+                <h2>Trámites Relacionados</h2>
+                <div class="main-content">
+                    <p>Otros servicios y trámites relacionados con la contraloría municipal.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detalle-container section" id="oficinas-atencion">
+            <div class="info-section">
+                <h2>Oficinas de Atención</h2>
+                <div class="main-content">
+                    <p>Ubicación y horarios de las oficinas donde se puede realizar este trámite.</p>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <!-- Mensaje cuando no hay detalles -->
+        <div class="no-details section" id="informacion-tramite">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <h3>Sin detalles disponibles</h3>
+                <p>No se encontraron detalles adicionales para este trámite.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Estilos adicionales para el menú de navegación */
+.navigation-menu {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    padding: 20px 0;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.nav-sidebar {
+    width: 250px;
+}
+
+.nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-list li {
+    margin: 0;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 20px;
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.nav-link:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+    color: #667eea;
+    border-left-color: #667eea;
+    text-decoration: none;
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-left-color: #764ba2;
+}
+
+.nav-link.active:hover {
+    color: white;
+}
+
+.main-content-wrapper {
+    margin-left: 290px;
+}
+
+.section {
+    margin-bottom: 30px;
+    scroll-margin-top: 100px;
+}
+
+/* Responsive para el menú */
+@media (max-width: 1200px) {
+    .navigation-menu {
+        display: none;
+    }
+    
+    .main-content-wrapper {
+        margin-left: 0;
+    }
+}
+
+/* Mostrar menú móvil en pantallas pequeñas */
+@media (max-width: 768px) {
+    .navigation-menu {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin-bottom: 30px;
+        width: 100%;
+        max-height: none;
+        overflow: visible;
+    }
+    
+    .nav-sidebar {
+        width: 100%;
+    }
+    
+    .nav-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+    }
+    
+    .nav-list li {
+        flex: 0 0 auto;
+    }
+    
+    .nav-link {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        border-radius: 20px;
+        border-left: none;
+        white-space: nowrap;
+    }
+    
+    .nav-link.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .main-content-wrapper {
+        margin-left: 0;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scrolling para los enlaces del menú
+    const navLinks = document.querySelectorAll('.nav-link');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                // Remover clase active de todos los enlaces
+                navLinks.forEach(navLink => navLink.classList.remove('active'));
+                // Agregar clase active al enlace clickeado
+                this.classList.add('active');
+                
+                // Scroll suave al elemento
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Actualizar enlace activo basado en el scroll
+    const sections = document.querySelectorAll('.section');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                const correspondingLink = document.querySelector(`a[href="#${id}"]`);
+                
+                if (correspondingLink) {
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    correspondingLink.classList.add('active');
+                }
+            }
+        });
+    }, {
+        threshold: 0.3,
+        rootMargin: '-100px 0px -70% 0px'
+    });
+    
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+});
+</script>
+
+{% endblock %}

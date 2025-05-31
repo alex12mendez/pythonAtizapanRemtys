@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio | REMTYS{% endblock %}
+
+{% block content %}
+<!-- rest of your template content -->
+
+
+
+<div class="areas-grid">
+    {% for clasificacion in clasificaciones %}
+        <a href="{% url 'ver_tramites' clasificacion.id %}" class="area-container">
+            <div class="area-item">
+                <img src="{% static clasificacion.imagen %}" alt="{{ clasificacion.nombre }}" class="area-image">
+            </div>
+            <h3 class="area-title">{{ clasificacion.nombre }}</h3>
+        </a>
+    {% empty %}
+        <p>No hay clasificaciones disponibles.</p>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

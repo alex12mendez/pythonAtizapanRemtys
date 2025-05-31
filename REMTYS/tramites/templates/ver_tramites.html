@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ clasificacion.nombre }} | REMTYS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ clasificacion.nombre }}</h1>
+    
+    <div class="tramites-container">      
+        <main class="main-content">
+            <div class="controls-section">
+                <div class="left-controls">
+                    <button class="control-btn" onclick="copyTable()">Copiar Tabla</button>
+                    <button class="control-btn" onclick="downloadCSV()">Descargar CSV</button>
+                    <button class="control-btn" onclick="printTable()">Imprimir</button>
+                </div>
+                <div class="search-section">
+                    <label for="search">Buscar:</label>
+                    <input type="text" id="search" class="search-input" placeholder="Buscar registros..." oninput="filterTable()">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="dataTable">
+                    <thead class="table-header">
+                        <tr>
+                            <th onclick="sortTable(0)">
+                                #
+                                <span class="sort-icon">↕</span>
+                            </th>
+                            <th onclick="sortTable(1)">
+                                Nombre
+                                <span class="sort-icon">↕</span>
+                            </th>
+                            <th onclick="sortTable(2)">
+                                Descripción
+                                <span class="sort-icon">↕</span>
+                            </th>
+                            <th onclick="sortTable(3)">
+                                Estatus
+                                <span class="sort-icon">↕</span>
+                            </th>
+                            <th>Ver</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for tramite in tramites %}
+                        <tr class="table-row">
+                            <td class="row-number">{{ forloop.counter }}</td>
+                            <td>{{ tramite.nombre }}</td>
+                            <td>{{ tramite.descripcion|truncatewords:15 }}</td>
+                            <td>
+                                <span class="status-badge {% if tramite.estatus == 'Activo' %}status-active{% else %}status-inactive{% endif %}">
+                                    {{ tramite.estatus }}
+                                </span>
+                            </td>
+<td>
+    <a href="{% url 'ver_detalle_tramite' tramite.id %}" class="view-btn" title="Ver detalles del trámite">
+        <i class="fas fa-eye"></i>
+    </a>
+</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px 20px; color: #718096; font-style: italic;">
+                                No hay trámites disponibles para {{ clasificacion.nombre }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-section">
+                <div class="pagination-info">
+                    Mostrando {{ tramites.count }} trámite{{ tramites.count|pluralize }} de {{ clasificacion.nombre }}
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" disabled onclick="previousPage()">Anterior</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn" disabled onclick="nextPage()">Siguiente</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <a href="{% url 'REMTyS' %}" class="btn btn-back">← Regresar</a>
+</div>
+{% endblock %}

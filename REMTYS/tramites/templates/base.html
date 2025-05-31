@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Inicio | Atizapán de Zaragoza{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'base.css' %}">
+    <link rel="shortcut icon" href="{% static 'imagenes/favicon.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'tabla.css' %}"> 
+    <script src="{% static 'table.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'tablastramites.css' %}"> 
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header top bar -->
+    <div class="header-top">
+        <div class="header-left">
+        <a href="https://www.google.com/maps/place/H.+Ayuntamiento+de+Atizap%C3%A1n+de+Zaragoza/@19.5430352,-99.2377901,17z/data=!3m1!4b1!4m6!3m5!1s0x85d21cdf76755031:0x1c3dbcc6e31e77eb!8m2!3d19.5430302!4d-99.2352152!16s%2Fg%2F1thcn3f0?entry=ttu&g_ep=EgoyMDI1MDUyMS4wIKXMDSoASAFQAw%3D%3Dhttps://www.google.com/maps/place/H.+Ayuntamiento+de+Atizap%C3%A1n+de+Zaragoza/@19.5430352,-99.2377901,17z/data=!3m1!4b1!4m6!3m5!1s0x85d21cdf76755031:0x1c3dbcc6e31e77eb!8m2!3d19.5430302!4d-99.2352152!16s%2Fg%2F1thcn3f0?entry=ttu&g_ep=EgoyMDI1MDUyMS4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="location-link">
+             <button class="location-btn">
+                 <i class="fas fa-map-marker-alt"></i> Ubicación
+             </button>
+        </a>
+        </div>
+        <div class="header-right">
+            <div class="social-icons">
+                <a href="https://www.facebook.com/GobAtizapan?locale=es_LA" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/atizapan_de_zaragoza/" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.instagram.com/atizapan_de_zaragoza/" class="social-icon"><i class="fab fa-x"></i></a>
+                <a href="https://www.youtube.com/@GobAtizapan" class="social-icon"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logo section -->
+    <div class="logo-container">
+       <img src="{% static 'imagenes/logoAtizapan.png' %}" alt="Atizapán de Zaragoza" class="logo">
+    </div>
+    
+    
+    <!-- Gradient bar after logo -->
+    <div class="gradient-bar"></div>
+
+<!-- Contenido dinámico -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-column footer-logo-column">
+            <img src="{% static 'imagenes/logoAtizapan.png' %}" alt="Logo Atizapán" class="footer-logo">
+            <div class="footer-socials">
+                <a href="#" class="footer-social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="footer-social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="footer-social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="footer-social-icon"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-column">
+            <h3 class="footer-title">Atizapán de Zaragoza</h3>
+            <ul class="footer-links">
+                <li class="footer-link"><a href="#">Acerca del municipio</a></li>
+                <li class="footer-link"><a href="#">Directorio</a></li>
+                <li class="footer-link"><a href="#">Transparencia</a></li>
+                <li class="footer-link"><a href="#">Contacto</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+
+            <ul class="footer-links">
+
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h3 class="footer-title">Contáctanos</h3>
+            <ul class="footer-links">
+                <li class="footer-link"><i class="fas fa-map-marker-alt"></i> Blvd. Adolfo López Mateos, Atizapán</li>
+                <li class="footer-link"><i class="fas fa-phone"></i> (55) 1234-5678</li>
+                <li class="footer-link"><i class="fas fa-envelope"></i> contacto@atizapan.gob.mx</li>
+                <li class="footer-link"><i class="fas fa-clock"></i> Lun-Vie: 9:00 - 17:00</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2025 H. Ayuntamiento de Atizapán de Zaragoza. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

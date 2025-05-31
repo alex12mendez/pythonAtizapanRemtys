@@ -1,0 +1,414 @@
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+/* Header del trámite */
+.tramite-header {
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(103, 103, 165, 0.3);
+    position: relative;
+    overflow: hidden;
+
+}
+
+.tramite-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.tramite-header h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.tramite-status {
+    position: relative;
+    z-index: 1;
+}
+
+.status-badge {
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.status-active {
+    background: linear-gradient(45deg, #56858d, #79b0cc);
+    color: white;
+}
+
+.status-inactive {
+    background: linear-gradient(45deg, #b64f80, #d85d8a);
+    color: white;
+}
+
+/* Contenedor de detalles */
+.detalle-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(103, 103, 165, 0.15);
+    overflow: hidden;
+    position: relative;
+    margin-top: 20px;
+}
+
+.detalle-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #404383, #6767A5);
+}
+
+.info-section {
+    padding: 40px;
+}
+
+.info-section h2 {
+    color: #404383;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    position: relative;
+    display: inline-block;
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.info-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60%;
+    height: 3px;
+    background: linear-gradient(90deg, #404383, #6767A5);
+    border-radius: 2px;
+}
+
+/* Tabla principal - el corazón del diseño */
+.form-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.form-table tr {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.form-table tr:nth-child(even) {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+}
+
+.form-table tr:nth-child(odd) {
+    background: white;
+}
+
+.form-table tr:hover {
+    background: linear-gradient(135deg, #e8f2ff 0%, #dae8ff 100%);
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(103, 103, 165, 0.15);
+}
+
+.form-table td {
+    padding: 20px 25px;
+    border: none;
+    vertical-align: top;
+    position: relative;
+}
+
+.form-table td:first-child {
+    font-weight: 700;
+    color: #404383;
+    background: linear-gradient(135deg, #f1f3f8 0%, #e8eaf6 100%);
+    width: 30%;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-right: 3px solid #6767A5;
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.form-table td:last-child {
+    color: #585958;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-family: 'Averta', 'Newake', sans-serif;
+}
+
+.form-table td:last-child * {
+    font-family: inherit;
+}
+
+/* Elementos destacados */
+.highlight {
+    background: linear-gradient(135deg, #404383, #6767A5);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(103, 103, 165, 0.3);
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+/* Badges y etiquetas */
+.badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: 'Newake', 'Averta', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 2px;
+    transition: all 0.3s ease;
+    line-height: 1.2;
+}
+
+.badge-online {
+    background: linear-gradient(135deg, #56858d, #79b0cc);
+    color: white;
+    box-shadow: 0 4px 12px rgba(86, 133, 141, 0.3);
+}
+
+.badge-medio {
+    background: linear-gradient(135deg, #79b0cc, #56858d);
+    color: white;
+    box-shadow: 0 4px 12px rgba(121, 176, 204, 0.3);
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #56858d, #79b0cc);
+    color: white;
+    box-shadow: 0 4px 12px rgba(86, 133, 141, 0.3);
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #b64f80, #d85d8a);
+    color: white;
+    box-shadow: 0 4px 12px rgba(182, 79, 128, 0.3);
+}
+
+.badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* Contenedor de medios */
+.medios-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+    font-family: inherit;
+}
+
+.medios-container .badge {
+    font-family: 'Newake', 'Averta', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Mensaje sin detalles */
+.no-details {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.alert {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border: none;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.alert-info {
+    border-left: 5px solid #79b0cc;
+}
+
+.alert h3 {
+    color: #6767A5;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.alert p {
+    color: #585958;
+    font-size: 1.1rem;
+    margin: 0;
+    font-family: 'Averta', 'Newake', sans-serif;
+}
+
+/* Botones de acción */
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+    padding: 0 20px;
+}
+
+.btn {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    font-family: 'Newake', 'Averta', sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #404383 0%, #6767A5 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #585958 0%, #616161 100%);
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.btn i {
+    font-size: 1.1rem;
+}
+
+/* Animaciones y efectos especiales */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.detalle-container {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.form-table tr {
+    animation: fadeInUp 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.form-table tr:nth-child(1) { animation-delay: 0.1s; }
+.form-table tr:nth-child(2) { animation-delay: 0.2s; }
+.form-table tr:nth-child(3) { animation-delay: 0.3s; }
+.form-table tr:nth-child(4) { animation-delay: 0.4s; }
+.form-table tr:nth-child(5) { animation-delay: 0.5s; }
+.form-table tr:nth-child(6) { animation-delay: 0.6s; }
+.form-table tr:nth-child(7) { animation-delay: 0.7s; }
+.form-table tr:nth-child(8) { animation-delay: 0.8s; }
+.form-table tr:nth-child(9) { animation-delay: 0.9s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tramite-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+    
+    .tramite-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-table {
+        font-size: 0.9rem;
+    }
+    
+    .form-table td {
+        padding: 15px;
+        display: block;
+        width: 100% !important;
+    }
+    
+    .form-table td:first-child {
+        background: linear-gradient(135deg, #404383, #6767A5);
+        color: white;
+        border-right: none;
+        border-bottom: 2px solid rgba(255,255,255,0.3);
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .form-table td:last-child {
+        border-radius: 0 0 8px 8px;
+        margin-bottom: 15px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        justify-content: center;
+    }
+}
+
+/* Efectos de impresión */
+@media print {
+    .action-buttons {
+        display: none;
+    }
+    
+    .detalle-container {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .form-table tr:hover {
+        background: none !important;
+        transform: none !important;
+    }
+}
