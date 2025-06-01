@@ -4,10 +4,126 @@
 {% block title %}Inicio | REMTYS{% endblock %}
 
 {% block content %}
-<!-- rest of your template content -->
 
+<!-- Panel de Administración (solo para superadmin) -->
+{% if user.is_authenticated and user.is_superuser %}
+<div class="admin-panel">
+    <div class="admin-header">
+        <h2><i class="fas fa-users-cog"></i> Panel de Administración de Usuarios</h2>
+        <button class="btn-admin" onclick="openCreateUserModal()">
+            <i class="fas fa-user-plus"></i> Agregar Usuario
+        </button>
+    </div>
+    
+    <div class="admin-content">
+        <div class="users-table-container">
+            <table class="users-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Área Asignada</th>
+                        <th>Estado</th>
+                        <th>Tipo</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Los datos se cargan dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
+<!-- Modal para Crear/Editar Usuario -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Crear Usuario</h3>
+            <span class="close" onclick="closeUserModal()">&times;</span>
+        </div>
+        <form id="userForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Usuario *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">Nombre</label>
+                    <input type="text" id="first_name" name="first_name">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Apellido</label>
+                    <input type="text" id="last_name" name="last_name">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Contraseña <span id="passwordRequired">*</span></label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <div class="form-group">
+                    <label for="clasificacion">Área</label>
+                    <select id="clasificacion" name="clasificacion">
+                        <option value="">Sin área asignada</option>
+                        <!-- Las opciones se cargan dinámicamente -->
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="is_active" name="is_active" checked>
+                        Usuario Activo
+                    </label>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" id="is_staff" name="is_staff">
+                        Administrador
+                    </label>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
+                <button type="submit" class="btn-save" id="saveButton">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<!-- Modal de Confirmación -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content confirm-modal">
+        <div class="modal-header">
+            <h3>Confirmar Eliminación</h3>
+            <span class="close" onclick="closeConfirmModal()">&times;</span>
+        </div>
+        <p id="confirmMessage">¿Estás seguro de que deseas eliminar este usuario?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+            <button type="button" class="btn-delete" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div class="admin-separator"></div>
+{% endif %}
+
+<!-- Sección de Áreas (para todos los usuarios) -->
 <div class="areas-grid">
     {% for clasificacion in clasificaciones %}
         <a href="{% url 'ver_tramites' clasificacion.id %}" class="area-container">
@@ -21,5 +137,275 @@
     {% endfor %}
 </div>
 
+<script>
+// Variables globales
+let currentEditUserId = null;
+let allClasificaciones = [];
+
+// Cargar datos al inicio
+document.addEventListener('DOMContentLoaded', function() {
+    // Solo cargar usuarios si es superadmin
+    if (document.getElementById('usersTable')) {
+        loadUsers();
+    }
+});
+
+// Función para cargar usuarios
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/users/');
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+            return;
+        }
+        
+        allClasificaciones = data.clasificaciones;
+        populateClasificacionSelect();
+        populateUsersTable(data.users);
+    } catch (error) {
+        showAlert('Error al cargar usuarios: ' + error.message, 'error');
+    }
+}
+
+// Función para poblar la tabla de usuarios
+function populateUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = createUserRow(user);
+        tbody.appendChild(row);
+    });
+}
+
+// Función para crear una fila de usuario
+function createUserRow(user) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${user.username}</td>
+        <td>${user.first_name} ${user.last_name}</td>
+        <td>${user.email || '-'}</td>
+        <td>${user.clasificacion_nombre}</td>
+        <td>
+            <span class="status-badge ${user.is_active ? 'active' : 'inactive'}">
+                ${user.is_active ? 'Activo' : 'Inactivo'}
+            </span>
+        </td>
+        <td>
+            <span class="role-badge ${user.is_staff ? 'admin' : 'user'}">
+                ${user.is_staff ? 'Admin' : 'Usuario'}
+            </span>
+        </td>
+        <td>${user.date_joined}</td>
+        <td class="actions">
+            <button class="btn-action edit" onclick="editUser(${user.id})" title="Editar">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-action delete" onclick="confirmDeleteUser(${user.id}, '${user.username}')" title="Eliminar">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    `;
+    return row;
+}
+
+// Función para poblar el select de clasificaciones
+function populateClasificacionSelect() {
+    const select = document.getElementById('clasificacion');
+    select.innerHTML = '<option value="">Sin área asignada</option>';
+    
+    allClasificaciones.forEach(clasificacion => {
+        const option = document.createElement('option');
+        option.value = clasificacion.id;
+        option.textContent = clasificacion.nombre;
+        select.appendChild(option);
+    });
+}
+
+// Función para abrir modal de crear usuario
+function openCreateUserModal() {
+    currentEditUserId = null;
+    document.getElementById('modalTitle').textContent = 'Crear Usuario';
+    document.getElementById('passwordRequired').style.display = 'inline';
+    document.getElementById('password').required = true;
+    document.getElementById('userForm').reset();
+    document.getElementById('is_active').checked = true;
+    document.getElementById('userModal').style.display = 'block';
+}
+
+// Función para editar usuario
+function editUser(userId) {
+    const tbody = document.getElementById('usersTableBody');
+    const rows = tbody.getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        const cells = row.getElementsByTagName('td');
+        if (cells.length > 0) {
+            // Encontrar la fila del usuario y extraer datos
+            const editBtn = row.querySelector('.btn-action.edit');
+            if (editBtn && editBtn.getAttribute('onclick').includes(userId)) {
+                currentEditUserId = userId;
+                document.getElementById('modalTitle').textContent = 'Editar Usuario';
+                document.getElementById('passwordRequired').style.display = 'none';
+                document.getElementById('password').required = false;
+                
+                // Rellenar el formulario con los datos actuales
+                document.getElementById('username').value = cells[0].textContent;
+                const fullName = cells[1].textContent.split(' ');
+                document.getElementById('first_name').value = fullName[0] || '';
+                document.getElementById('last_name').value = fullName.slice(1).join(' ') || '';
+                document.getElementById('email').value = cells[2].textContent !== '-' ? cells[2].textContent : '';
+                
+                // Encontrar la clasificación
+                const clasificacionNombre = cells[3].textContent;
+                const clasificacion = allClasificaciones.find(c => c.nombre === clasificacionNombre);
+                document.getElementById('clasificacion').value = clasificacion ? clasificacion.id : '';
+                
+                // Estado y rol
+                document.getElementById('is_active').checked = cells[4].textContent.includes('Activo');
+                document.getElementById('is_staff').checked = cells[5].textContent.includes('Admin');
+                
+                document.getElementById('userModal').style.display = 'block';
+                break;
+            }
+        }
+    }
+}
+
+// Función para cerrar modal de usuario
+function closeUserModal() {
+    document.getElementById('userModal').style.display = 'none';
+    document.getElementById('userForm').reset();
+    currentEditUserId = null;
+}
+
+// Función para confirmar eliminación
+function confirmDeleteUser(userId, username) {
+    document.getElementById('confirmMessage').textContent = 
+        `¿Estás seguro de que deseas eliminar al usuario "${username}"?`;
+    document.getElementById('confirmDeleteBtn').onclick = () => deleteUser(userId);
+    document.getElementById('confirmModal').style.display = 'block';
+}
+
+// Función para cerrar modal de confirmación
+function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+
+// Función para eliminar usuario
+async function deleteUser(userId) {
+    try {
+        const response = await fetch('/api/users/delete/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            loadUsers();
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al eliminar usuario: ' + error.message, 'error');
+    }
+    
+    closeConfirmModal();
+}
+
+// Función para manejar el envío del formulario
+document.getElementById('userForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const userData = {
+        username: formData.get('username'),
+        email: formData.get('email'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        clasificacion_id: formData.get('clasificacion') || null,
+        is_active: document.getElementById('is_active').checked,
+        is_staff: document.getElementById('is_staff').checked
+    };
+    
+    const password = formData.get('password');
+    if (password) {
+        userData.password = password;
+    }
+    
+    if (currentEditUserId) {
+        userData.user_id = currentEditUserId;
+        if (password) {
+            userData.new_password = password;
+        }
+    }
+    
+    const url = currentEditUserId ? '/api/users/update/' : '/api/users/create/';
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            closeUserModal();
+            loadUsers();
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al guardar usuario: ' + error.message, 'error');
+    }
+});
+
+// Función para mostrar alertas
+function showAlert(message, type) {
+    // Crear el elemento de alerta
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `
+        <span>${message}</span>
+        <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    // Insertar al inicio del contenido
+    const content = document.querySelector('main');
+    content.insertBefore(alert, content.firstChild);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (alert.parentElement) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+// Cerrar modales al hacer clic fuera de ellos
+window.onclick = function(event) {
+    const userModal = document.getElementById('userModal');
+    const confirmModal = document.getElementById('confirmModal');
+    
+    if (event.target === userModal) {
+        closeUserModal();
+    }
+    if (event.target === confirmModal) {
+        closeConfirmModal();
+    }
+}
+</script>
 
 {% endblock %}
