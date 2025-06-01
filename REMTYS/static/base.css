@@ -25,7 +25,7 @@ body {
     display: flex;
     align-items: center;
     font-size: 16px;
-    z-index: 1000;
+     z-index: 1001; /* Aumentar z-index */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     font-family: 'Newake', 'Averta', Arial, sans-serif;
 }
@@ -2749,3 +2749,4 @@ body {
 .action-btn * {
     pointer-events: none;
 }
+

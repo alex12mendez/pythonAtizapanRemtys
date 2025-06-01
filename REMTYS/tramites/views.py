@@ -8,6 +8,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
 from .models import ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario
+from .models import (
+    ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario,
+    TramiteModalidad, TramiteRequisito, TramiteCosto, TramiteOpcionPago,
+    TramiteFundamentoJuridico, TramiteInformacionAdicional, TramiteArchivoAnexo,
+    TramiteOficinaAtencion, TramiteRelacionado
+)
 
 
 def login_view(request):
@@ -117,9 +123,27 @@ def ver_detalle_tramite(request, tramite_id):
     except DetalleTramite.DoesNotExist:
         detalle = None
     
+    # Obtener toda la información adicional del trámite
+    modalidades = tramite.modalidades.all()
+    costos = tramite.costos.all()
+    opciones_pago = tramite.opciones_pago.all()
+    fundamentos_juridicos = tramite.fundamentos_juridicos.all()
+    informacion_adicional = tramite.informacion_adicional.all()
+    archivos_anexos = tramite.archivos_anexos.all()
+    oficinas_atencion = tramite.oficinas_atencion.all()
+    tramites_relacionados = tramite.tramites_relacionados.all()
+    
     context = {
         'tramite': tramite,
         'detalle': detalle,
+        'modalidades': modalidades,
+        'costos': costos,
+        'opciones_pago': opciones_pago,
+        'fundamentos_juridicos': fundamentos_juridicos,
+        'informacion_adicional': informacion_adicional,
+        'archivos_anexos': archivos_anexos,
+        'oficinas_atencion': oficinas_atencion,
+        'tramites_relacionados': tramites_relacionados,
     }
     return render(request, 'detalle_tramite.html', context)
 

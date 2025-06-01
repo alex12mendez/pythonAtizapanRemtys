@@ -41,10 +41,6 @@
                 
                 <table class="form-table">
                     <tr>
-                        <td>TIPO</td>
-                        <td><span class="highlight">{{ detalle.clasificacion|default:"" }}</span></td>
-                    </tr>
-                    <tr>
                         <td>Unidad Administrativa:</td>
                         <td><strong>{{ detalle.unidad_administrativa|default:"" }}</strong></td>
                     </tr>
@@ -53,25 +49,21 @@
                         <td>{{ detalle.descripcion_servicio|default:"" }}</td>
                     </tr>
                     <tr>
+                        <td>Nombre por Normatividad:</td>
+                        <td>{{ detalle.nombre_por_normatividad|default:"" }}</td>
+                    </tr>
+                    <tr>
                         <td>Clasificación:</td>
                         <td><span class="badge badge-online">{{ detalle.clasificacion|default:"" }}</span></td>
                     </tr>
                     <tr>
                         <td>Medio(s) para presentar el Trámite/Servicio:</td>
                         <td>
-        <div class="medios-container">
-            {% if detalle.medios_presentacion %}
-
-                {% if detalle.medios_presentacion|length > 10 %}
-                    <!-- Es probable que sea un string, no una lista -->
-                    <span class="badge badge-medio">{{ detalle.medios_presentacion }}</span>
-                {% else %}
-                    {% for medio in detalle.medios_presentacion %}
-                        <span class="badge badge-medio">{{ medio }}</span>
-                    {% endfor %}
-                {% endif %}
-            {% endif %}
-        </div>
+                            <div class="medios-container">
+                                {% if detalle.medios_presentacion %}
+                                    <span class="badge badge-medio">{{ detalle.medios_presentacion }}</span>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -93,86 +85,279 @@
                 </table>
             </div>
         </div>
+        {% endif %}
         
-        <!-- Secciones adicionales -->
+        <!-- Modalidades y Requisitos -->
         <div class="detalle-container section" id="modalidades-requisitos">
             <div class="info-section">
                 <h2>Modalidades y Requisitos</h2>
-                <div class="main-content">
-                    <p>Información sobre las modalidades y requisitos para presentar la denuncia ciudadana.</p>
-                </div>
+                {% if modalidades %}
+                    {% for modalidad in modalidades %}
+                        <div class="modalidad-section">
+                            <hr class="section-divider">
+                            <h4>{{ modalidad.tipo_modalidad }}</h4>
+                            <br>
+                            {% if modalidad.requisitos.all %}
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Descripción</th>
+                                            <th scope="col">Tipo Requisito</th>
+                                            <th scope="col">Original</th>
+                                            <th scope="col">Copia</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for requisito in modalidad.requisitos.all %}
+                                            <tr>
+                                                <td>{{ requisito.descripcion }}</td>
+                                                <td>{{ requisito.tipo_requisito }}</td>
+                                                <td>{{ requisito.original }}</td>
+                                                <td>{{ requisito.copia }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <p class="no-data">No hay requisitos definidos para esta modalidad.</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay modalidades y requisitos definidos para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Costos -->
         <div class="detalle-container section" id="costos">
             <div class="info-section">
                 <h2>Costos</h2>
-                <div class="main-content">
-                    <p>El servicio es gratuito. No tiene costo alguno para el ciudadano.</p>
-                </div>
+                {% if costos %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Concepto</th>
+                                <th scope="col">Importe</th>
+                                <th scope="col">Unidad Valor</th>
+                                <th scope="col">Fundamento Jurídico</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for costo in costos %}
+                                <tr>
+                                    <td>{{ costo.concepto }}</td>
+                                    <td>{{ costo.importe }}</td>
+                                    <td>{{ costo.unidad_valor }}</td>
+                                    <td>{{ costo.fundamento_juridico }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    {% if opciones_pago %}
+                        <h3>Opciones de pago</h3>
+                        <hr class="section-divider">
+                        {% for opcion in opciones_pago %}
+                            <h4>{{ opcion.descripcion }}</h4>
+                            <br>
+                            {% if opcion.observacion %}
+                                <span>- {{ opcion.observacion }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay información de costos definida para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Fundamento Jurídico -->
         <div class="detalle-container section" id="fundamento-juridico">
             <div class="info-section">
-                <h2>Fundamento Jurídico</h2>
-                <div class="main-content">
-                    <p>Base legal y normativa que sustenta este trámite y servicio.</p>
-                </div>
+                <h2>Fundamentos Jurídicos</h2>
+                {% if fundamentos_juridicos %}
+                    {% for fundamento in fundamentos_juridicos %}
+                        <hr class="section-divider">
+                        <h6>{{ fundamento.nombre_ley }}</h6>
+                        <br>
+                        <span>{{ fundamento.articulos }}</span>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay fundamentos jurídicos definidos para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Archivos Anexos -->
         <div class="detalle-container section" id="archivos-anexos">
             <div class="info-section">
                 <h2>Archivos Anexos</h2>
-                <div class="main-content">
-                    <p>Documentos y formatos relacionados con el trámite.</p>
-                </div>
+                {% if archivos_anexos %}
+                    {% for archivo in archivos_anexos %}
+                        <hr class="section-divider">
+                        <h4>{{ archivo.descripcion }}</h4>
+                        <br>
+                        <button type="button" class="btn btn-secondary">
+                            <i class="fas fa-eye" style="color:white"></i>
+                            <a href="{{ archivo.archivo.url }}" target="_blank" style="color: white; text-decoration: none;">
+                                Ver Archivo
+                            </a>
+                        </button>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay archivos anexos para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Información Adicional -->
         <div class="detalle-container section" id="informacion-adicional">
             <div class="info-section">
                 <h2>Información Adicional</h2>
-                <div class="main-content">
-                    <p>Datos complementarios sobre el proceso y procedimientos.</p>
-                </div>
+                {% if informacion_adicional %}
+                    {% for info in informacion_adicional %}
+                        <hr class="section-divider">
+                        <h4>{{ info.pregunta }}</h4>
+                        <br>
+                        <span>- {{ info.respuesta }}</span>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay información adicional para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Trámites Relacionados -->
         <div class="detalle-container section" id="tramites-relacionados">
             <div class="info-section">
                 <h2>Trámites Relacionados</h2>
-                <div class="main-content">
-                    <p>Otros servicios y trámites relacionados con la contraloría municipal.</p>
-                </div>
+                {% if tramites_relacionados %}
+                    {% for relacionado in tramites_relacionados %}
+                        <div class="tramite-relacionado">
+                            <h4>
+                                <a href="{% url 'ver_detalle_tramite' relacionado.tramite_relacionado.id %}">
+                                    {{ relacionado.tramite_relacionado.nombre }}
+                                </a>
+                            </h4>
+                            {% if relacionado.descripcion %}
+                                <p>{{ relacionado.descripcion }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay trámites relacionados.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
         
+        <!-- Oficinas de Atención -->
         <div class="detalle-container section" id="oficinas-atencion">
             <div class="info-section">
                 <h2>Oficinas de Atención</h2>
-                <div class="main-content">
-                    <p>Ubicación y horarios de las oficinas donde se puede realizar este trámite.</p>
-                </div>
+                {% if oficinas_atencion %}
+                    {% for oficina in oficinas_atencion %}
+                        <hr class="section-divider">
+                        <div class="oficina-info">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <div class="info-value">{{ oficina.nombre }}</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-sm-6 form-group">
+                                    <label>Colonia</label>
+                                    <div class="info-value">{{ oficina.colonia }}</div>
+                                </div>
+                                <div class="col-sm-4 form-group">
+                                    <label>Código Postal</label>
+                                    <div class="info-value">{{ oficina.codigo_postal }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-sm-6 form-group">
+                                    <label>Calle</label>
+                                    <div class="info-value">{{ oficina.calle }}</div>
+                                </div>
+                                <div class="col-sm-3 form-group">
+                                    <label>Número Exterior</label>
+                                    <div class="info-value">{{ oficina.numero_exterior }}</div>
+                                </div>
+                                <div class="col-sm-3 form-group">
+                                    <label>Número Interior</label>
+                                    <div class="info-value">{{ oficina.numero_interior|default:"S/N" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Horario de Atención</label>
+                                <div class="info-value">{{ oficina.horario_atencion }}</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-sm-6 form-group">
+                                    <label>Teléfono</label>
+                                    <div class="info-value">{{ oficina.telefonos }}</div>
+                                </div>
+                                <div class="col-sm-6 form-group">
+                                    <label>Celular</label>
+                                    <div class="info-value">{{ oficina.celular|default:"S/N" }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Correo del Responsable</label>
+                                <div class="info-value">
+                                    <a href="mailto:{{ oficina.email_responsable }}">{{ oficina.email_responsable }}</a>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-sm-6 form-group">
+                                    <label>Nombre del Responsable</label>
+                                    <div class="info-value">{{ oficina.nombre_responsable }}</div>
+                                </div>
+                                <div class="col-sm-6 form-group">
+                                    <label>Puesto del Responsable</label>
+                                    <div class="info-value">{{ oficina.puesto_responsable }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if oficina.latitud and oficina.longitud %}
+                                <div class="form-group">
+                                    <div id="map_{{ forloop.counter0 }}" style="width: 100%; height: 350px;"></div>
+                                </div>
+                                <script>
+                                    // Script para mapa será agregado después
+                                </script>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-data">
+                        <p>No hay oficinas de atención definidas para este trámite.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
-        {% else %}
-        <!-- Mensaje cuando no hay detalles -->
-        <div class="no-details section" id="informacion-tramite">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i>
-                <h3>Sin detalles disponibles</h3>
-                <p>No se encontraron detalles adicionales para este trámite.</p>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 
 <style>
-/* Estilos adicionales para el menú de navegación */
+/* Usar los estilos existentes y agregar estos nuevos */
 .navigation-menu {
     position: fixed;
     left: 20px;
@@ -236,6 +421,62 @@
 .section {
     margin-bottom: 30px;
     scroll-margin-top: 100px;
+}
+
+/* Estilos para las nuevas secciones */
+.section-divider {
+    border: 1px solid #6F4C91;
+    margin: 20px 0;
+}
+
+.modalidad-section {
+    margin-bottom: 30px;
+}
+
+.no-data {
+    text-align: center;
+    color: #757575;
+    font-style: italic;
+    padding: 20px;
+}
+
+.oficina-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.oficina-info .form-group {
+    margin-bottom: 15px;
+}
+
+.oficina-info label {
+    font-weight: 600;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: black;
+    font-weight: normal;
+}
+
+.tramite-relacionado {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.tramite-relacionado h4 a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.tramite-relacionado h4 a:hover {
+    text-decoration: underline;
 }
 
 /* Responsive para el menú */
