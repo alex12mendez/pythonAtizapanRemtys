@@ -5,7 +5,7 @@ from django.dispatch import receiver
 
 
 class ClasificacionTramites(models.Model):
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=300)
     imagen = models.ImageField(upload_to='imagenes/', null=True, blank=True)
 
     class Meta:
@@ -43,7 +43,7 @@ class Tramite(models.Model):
     )
 
     clasificacion = models.ForeignKey(ClasificacionTramites, on_delete=models.CASCADE)
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=300)
     descripcion = models.TextField()
     estatus = models.CharField(max_length=10, choices=ESTATUS_CHOICES, default='Activo')
 
@@ -53,12 +53,12 @@ class Tramite(models.Model):
 
 class DetalleTramite(models.Model):
     tramite = models.OneToOneField(Tramite, on_delete=models.CASCADE)
-    unidad_administrativa = models.CharField(max_length=255)
+    unidad_administrativa = models.CharField(max_length=300)
     descripcion_servicio = models.TextField()
-    nombre_por_normatividad = models.CharField(max_length=255)
-    clasificacion = models.CharField(max_length=100)
-    medios_presentacion = models.CharField(max_length=255)
-    documento_obtenido = models.CharField(max_length=255)
+    nombre_por_normatividad = models.CharField(max_length=300)
+    clasificacion = models.CharField(max_length=300)
+    medios_presentacion = models.CharField(max_length=300)
+    documento_obtenido = models.CharField(max_length=300)
     criterios_resolucion = models.TextField()
     requiere_inspeccion = models.BooleanField(default=False)
     objetivo_inspeccion = models.TextField()

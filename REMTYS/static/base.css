@@ -2448,3 +2448,304 @@ body {
         padding: 3px 8px;
     }
 }
+
+
+/* ==================== GESTIÓN DE TRÁMITES - COLORES INSTITUCIONALES ==================== */
+
+.tramites-management-panel {
+    background: linear-gradient(135deg, #404383 0%, #56858d 100%);
+    margin: 20px auto;
+    max-width: 1200px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.management-header h2 {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.management-header h2 i {
+    font-size: 1.4rem;
+}
+
+.btn-add-tramite {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.btn-add-tramite:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.management-separator {
+    height: 2px;
+    background: linear-gradient(90deg, 
+        rgba(64, 67, 131, 0) 0%, 
+        #404383 15%, 
+        #6767A5 30%, 
+        #56858d 45%, 
+        #79b0cc 60%, 
+        #b64f80 75%, 
+        #d85d8a 90%, 
+        rgba(216, 93, 138, 0) 100%);
+    margin: 30px auto 40px;
+    max-width: 1200px;
+}
+
+/* ==================== ACCIONES EN LA TABLA ==================== */
+
+.actions-cell {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 6px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.action-btn.view-btn {
+    background-color: #6767A5;
+    color: white;
+}
+
+.action-btn.view-btn:hover {
+    background-color: #5a5a8a;
+    transform: scale(1.1);
+    color: white;
+    text-decoration: none;
+}
+
+.action-btn.edit-btn {
+    background-color: #56858d;
+    color: white;
+}
+
+.action-btn.edit-btn:hover {
+    background-color: #4a7179;
+    transform: scale(1.1);
+}
+
+.action-btn.delete-btn {
+    background-color: #b64f80;
+    color: white;
+}
+
+.action-btn.delete-btn:hover {
+    background-color: #a0456e;
+    transform: scale(1.1);
+}
+
+/* ==================== MODAL PARA TRÁMITES ==================== */
+
+#tramiteModal .modal-content {
+    max-width: 500px;
+}
+
+#tramiteModal .form-group {
+    margin-bottom: 20px;
+}
+
+#tramiteModal .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #404383;
+    font-size: 14px;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+#tramiteModal .form-group input,
+#tramiteModal .form-group select,
+#tramiteModal .form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    font-family: 'Averta', Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+#tramiteModal .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+#tramiteModal .form-group input:focus,
+#tramiteModal .form-group select:focus,
+#tramiteModal .form-group textarea:focus {
+    outline: none;
+    border-color: #6767A5;
+    box-shadow: 0 0 0 3px rgba(103, 103, 165, 0.1);
+}
+
+/* ==================== RESPONSIVE PARA GESTIÓN DE TRÁMITES ==================== */
+
+@media (max-width: 768px) {
+    .management-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px 20px;
+    }
+    
+    .management-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .btn-add-tramite {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+    
+    .actions-cell {
+        flex-direction: column;
+        gap: 3px;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+    
+    #tramiteModal .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .management-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .btn-add-tramite {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .action-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 10px;
+    }
+}
+
+/* ==================== ARREGLO DE ÍCONOS EN BOTONES ==================== */
+
+.action-btn i {
+    font-size: 14px !important;
+    line-height: 1 !important;
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.action-btn {
+    padding: 0 !important;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden !important;
+}
+
+/* Específicamente para cada tipo de botón */
+.action-btn.view-btn {
+    background-color: #6767A5 !important;
+    color: white !important;
+}
+
+.action-btn.view-btn:hover {
+    background-color: #5a5a8a !important;
+    transform: translateY(-2px);
+    color: white !important;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(103, 103, 165, 0.3);
+}
+
+.action-btn.edit-btn {
+    background-color: #56858d !important;
+    color: white !important;
+}
+
+.action-btn.edit-btn:hover {
+    background-color: #4a7179 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(86, 133, 141, 0.3);
+}
+
+.action-btn.delete-btn {
+    background-color: #b64f80 !important;
+    color: white !important;
+}
+
+.action-btn.delete-btn:hover {
+    background-color: #a0456e !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(182, 79, 128, 0.3);
+}
+
+/* Asegurar que no hay estilos conflictivos */
+.action-btn * {
+    pointer-events: none;
+}

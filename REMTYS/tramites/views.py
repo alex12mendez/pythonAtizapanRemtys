@@ -313,3 +313,161 @@ def delete_user_api(request):
         return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    
+    
+    # AGREGAR ESTAS NUEVAS FUNCIONES AL FINAL DE TU views.py EXISTENTE
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_tramite_api(request):
+    """API para crear un nuevo trámite"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Debes iniciar sesión'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        clasificacion_id = data.get('clasificacion_id')
+        
+        if not clasificacion_id:
+            return JsonResponse({'error': 'Clasificación requerida'}, status=400)
+        
+        clasificacion = get_object_or_404(ClasificacionTramites, id=clasificacion_id)
+        
+        # Verificar permisos
+        if not request.user.is_staff and not request.user.is_superuser:
+            try:
+                perfil = PerfilUsuario.objects.get(user=request.user)
+                if perfil.clasificacion != clasificacion:
+                    return JsonResponse({'error': 'No tienes permisos para crear trámites en esta área'}, status=403)
+            except PerfilUsuario.DoesNotExist:
+                return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+        
+        # Validar datos requeridos
+        nombre = data.get('nombre', '').strip()
+        descripcion = data.get('descripcion', '').strip()
+        estatus = data.get('estatus', 'Activo')
+        
+        if not nombre:
+            return JsonResponse({'error': 'El nombre es obligatorio'}, status=400)
+        
+        if not descripcion:
+            return JsonResponse({'error': 'La descripción es obligatoria'}, status=400)
+        
+        # Crear trámite
+        tramite = Tramite.objects.create(
+            clasificacion=clasificacion,
+            nombre=nombre,
+            descripcion=descripcion,
+            estatus=estatus
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Trámite creado exitosamente',
+            'tramite': {
+                'id': tramite.id,
+                'nombre': tramite.nombre,
+                'descripcion': tramite.descripcion,
+                'estatus': tramite.estatus
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_tramite_api(request):
+    """API para actualizar un trámite"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Debes iniciar sesión'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        tramite_id = data.get('tramite_id')
+        
+        if not tramite_id:
+            return JsonResponse({'error': 'ID de trámite requerido'}, status=400)
+        
+        tramite = get_object_or_404(Tramite, id=tramite_id)
+        
+        # Verificar permisos
+        if not request.user.is_staff and not request.user.is_superuser:
+            try:
+                perfil = PerfilUsuario.objects.get(user=request.user)
+                if perfil.clasificacion != tramite.clasificacion:
+                    return JsonResponse({'error': 'No tienes permisos para editar este trámite'}, status=403)
+            except PerfilUsuario.DoesNotExist:
+                return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+        
+        # Actualizar campos
+        tramite.nombre = data.get('nombre', tramite.nombre).strip()
+        tramite.descripcion = data.get('descripcion', tramite.descripcion).strip()
+        tramite.estatus = data.get('estatus', tramite.estatus)
+        
+        if not tramite.nombre:
+            return JsonResponse({'error': 'El nombre es obligatorio'}, status=400)
+        
+        if not tramite.descripcion:
+            return JsonResponse({'error': 'La descripción es obligatoria'}, status=400)
+        
+        tramite.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Trámite actualizado exitosamente',
+            'tramite': {
+                'id': tramite.id,
+                'nombre': tramite.nombre,
+                'descripcion': tramite.descripcion,
+                'estatus': tramite.estatus
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def delete_tramite_api(request):
+    """API para eliminar un trámite"""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Debes iniciar sesión'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        tramite_id = data.get('tramite_id')
+        
+        if not tramite_id:
+            return JsonResponse({'error': 'ID de trámite requerido'}, status=400)
+        
+        tramite = get_object_or_404(Tramite, id=tramite_id)
+        
+        # Verificar permisos
+        if not request.user.is_staff and not request.user.is_superuser:
+            try:
+                perfil = PerfilUsuario.objects.get(user=request.user)
+                if perfil.clasificacion != tramite.clasificacion:
+                    return JsonResponse({'error': 'No tienes permisos para eliminar este trámite'}, status=403)
+            except PerfilUsuario.DoesNotExist:
+                return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+        
+        nombre_tramite = tramite.nombre
+        tramite.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Trámite "{nombre_tramite}" eliminado exitosamente'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

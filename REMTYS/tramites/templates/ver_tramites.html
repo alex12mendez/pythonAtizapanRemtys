@@ -7,6 +7,19 @@
 <div class="container">
     <h1>{{ clasificacion.nombre }}</h1>
     
+    <!-- Panel de gestión de trámites (solo para usuarios autenticados) -->
+    {% if user.is_authenticated %}
+    <div class="tramites-management-panel">
+        <div class="management-header">
+            <h2><i class="fas fa-tasks"></i> Gestión de Trámites</h2>
+            <button class="btn-add-tramite" onclick="openCreateTramiteModal()">
+                <i class="fas fa-plus"></i> Agregar Trámite
+            </button>
+        </div>
+    </div>
+    <div class="management-separator"></div>
+    {% endif %}
+    
     <div class="tramites-container">      
         <main class="main-content">
             <div class="controls-section">
@@ -41,25 +54,33 @@
                                 Estatus
                                 <span class="sort-icon">↕</span>
                             </th>
-                            <th>Ver</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
                         {% for tramite in tramites %}
-                        <tr class="table-row">
+                        <tr class="table-row" data-tramite-id="{{ tramite.id }}">
                             <td class="row-number">{{ forloop.counter }}</td>
-                            <td>{{ tramite.nombre }}</td>
-                            <td>{{ tramite.descripcion|truncatewords:15 }}</td>
+                            <td class="tramite-nombre">{{ tramite.nombre }}</td>
+                            <td class="tramite-descripcion">{{ tramite.descripcion|truncatewords:15 }}</td>
                             <td>
-                                <span class="status-badge {% if tramite.estatus == 'Activo' %}status-active{% else %}status-inactive{% endif %}">
+                                <span class="status-badge {% if tramite.estatus == 'PUBLICADO' %}status-active{% else %}status-inactive{% endif %}">
                                     {{ tramite.estatus }}
                                 </span>
                             </td>
-<td>
-    <a href="{% url 'ver_detalle_tramite' tramite.id %}" class="view-btn" title="Ver detalles del trámite">
-        <i class="fas fa-eye"></i>
-    </a>
-</td>
+                            <td class="actions-cell">
+                                <a href="{% url 'ver_detalle_tramite' tramite.id %}" class="action-btn view-btn" title="Ver detalles">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user.is_authenticated %}
+                                <button class="action-btn edit-btn" onclick="editTramite(this)" title="Editar trámite" data-tramite-id="{{ tramite.id }}" data-nombre="{{ tramite.nombre }}" data-descripcion="{{ tramite.descripcion }}" data-estatus="{{ tramite.estatus }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete-btn" onclick="confirmDeleteTramite(this)" title="Eliminar trámite" data-tramite-id="{{ tramite.id }}" data-nombre="{{ tramite.nombre }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -87,4 +108,313 @@
     
     <a href="{% url 'REMTyS' %}" class="btn btn-back">← Regresar</a>
 </div>
+
+<!-- Modal para Crear/Editar Trámite -->
+{% if user.is_authenticated %}
+<div id="tramiteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="tramiteModalTitle">Crear Trámite</h3>
+            <span class="close" onclick="closeTramiteModal()">&times;</span>
+        </div>
+        <form id="tramiteForm">
+            <div class="form-group">
+                <label for="tramite_nombre">Nombre del Trámite *</label>
+                <input type="text" id="tramite_nombre" name="nombre" required maxlength="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="tramite_descripcion">Descripción *</label>
+                <textarea id="tramite_descripcion" name="descripcion" required rows="4" placeholder="Describe detalladamente el trámite..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="tramite_estatus">Estatus</label>
+                <select id="tramite_estatus" name="estatus">
+                    <option value="PUBLICADO">PUBLICADO</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeTramiteModal()">Cancelar</button>
+                <button type="submit" class="btn-save" id="saveTramiteButton">Guardar Trámite</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div id="confirmDeleteModal" class="modal">
+    <div class="modal-content confirm-modal">
+        <div class="modal-header">
+            <h3>Confirmar Eliminación</h3>
+            <span class="close" onclick="closeConfirmDeleteModal()">&times;</span>
+        </div>
+        <p id="confirmDeleteMessage">¿Estás seguro de que deseas eliminar este trámite?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeConfirmDeleteModal()">Cancelar</button>
+            <button type="button" class="btn-delete" id="confirmDeleteBtn">Eliminar</button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Variables globales
+let currentEditTramiteId = null;
+const clasificacionId = parseInt('{{ clasificacion.id }}');
+
+// Función para abrir modal de crear trámite
+function openCreateTramiteModal() {
+    currentEditTramiteId = null;
+    document.getElementById('tramiteModalTitle').textContent = 'Crear Trámite';
+    document.getElementById('tramiteForm').reset();
+    document.getElementById('tramite_estatus').value = 'PUBLICADO';
+    document.getElementById('tramiteModal').style.display = 'block';
+}
+
+// Función para editar trámite
+function editTramite(button) {
+    const tramiteId = button.getAttribute('data-tramite-id');
+    const nombre = button.getAttribute('data-nombre');
+    const descripcion = button.getAttribute('data-descripcion');
+    const estatus = button.getAttribute('data-estatus');
+    
+    currentEditTramiteId = tramiteId;
+    document.getElementById('tramiteModalTitle').textContent = 'Editar Trámite';
+    
+    document.getElementById('tramite_nombre').value = nombre;
+    document.getElementById('tramite_descripcion').value = descripcion;
+    document.getElementById('tramite_estatus').value = estatus;
+    
+    document.getElementById('tramiteModal').style.display = 'block';
+}
+
+// Función para cerrar modal de trámite
+function closeTramiteModal() {
+    document.getElementById('tramiteModal').style.display = 'none';
+    document.getElementById('tramiteForm').reset();
+    currentEditTramiteId = null;
+}
+
+// Función para confirmar eliminación
+function confirmDeleteTramite(button) {
+    const tramiteId = button.getAttribute('data-tramite-id');
+    const tramiteNombre = button.getAttribute('data-nombre');
+    
+    document.getElementById('confirmDeleteMessage').textContent = 
+        `¿Estás seguro de que deseas eliminar el trámite "${tramiteNombre}"?`;
+    document.getElementById('confirmDeleteBtn').onclick = () => deleteTramite(tramiteId);
+    document.getElementById('confirmDeleteModal').style.display = 'block';
+}
+
+// Función para cerrar modal de confirmación
+function closeConfirmDeleteModal() {
+    document.getElementById('confirmDeleteModal').style.display = 'none';
+}
+
+// Función para eliminar trámite
+async function deleteTramite(tramiteId) {
+    try {
+        const response = await fetch('/api/tramites/delete/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ tramite_id: tramiteId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            // Remover la fila de la tabla
+            const row = document.querySelector(`tr[data-tramite-id="${tramiteId}"]`);
+            if (row) {
+                row.remove();
+                updateRowNumbers();
+            }
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al eliminar trámite: ' + error.message, 'error');
+    }
+    
+    closeConfirmDeleteModal();
+}
+
+// Función para manejar el envío del formulario
+document.getElementById('tramiteForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const tramiteData = {
+        nombre: formData.get('nombre').trim(),
+        descripcion: formData.get('descripcion').trim(),
+        estatus: formData.get('estatus'),
+        clasificacion_id: clasificacionId
+    };
+    
+    if (currentEditTramiteId) {
+        tramiteData.tramite_id = currentEditTramiteId;
+    }
+    
+    const url = currentEditTramiteId ? '/api/tramites/update/' : '/api/tramites/create/';
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(tramiteData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            closeTramiteModal();
+            
+            if (currentEditTramiteId) {
+                // Actualizar fila existente
+                updateTramiteRow(currentEditTramiteId, data.tramite);
+            } else {
+                // Recargar página para mostrar nuevo trámite
+                window.location.reload();
+            }
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al guardar trámite: ' + error.message, 'error');
+    }
+});
+
+// Función para actualizar una fila de trámite
+function updateTramiteRow(tramiteId, tramiteData) {
+    const row = document.querySelector(`tr[data-tramite-id="${tramiteId}"]`);
+    if (row) {
+        row.querySelector('.tramite-nombre').textContent = tramiteData.nombre;
+        
+        const descripcionCell = row.querySelector('.tramite-descripcion');
+        // Truncar descripción para mostrar
+        const truncatedDesc = tramiteData.descripcion.split(' ').slice(0, 15).join(' ');
+        descripcionCell.textContent = truncatedDesc + (tramiteData.descripcion.split(' ').length > 15 ? '...' : '');
+        descripcionCell.setAttribute('data-full-description', tramiteData.descripcion);
+        
+        const statusBadge = row.querySelector('.status-badge');
+        statusBadge.textContent = tramiteData.estatus;
+        statusBadge.className = `status-badge ${tramiteData.estatus === 'PUBLICADO' ? 'status-active' : 'status-inactive'}`;
+    }
+}
+
+// Función para actualizar números de fila
+function updateRowNumbers() {
+    const rows = document.querySelectorAll('#tableBody .table-row');
+    rows.forEach((row, index) => {
+        row.querySelector('.row-number').textContent = index + 1;
+    });
+}
+
+// Función para mostrar alertas
+function showAlert(message, type) {
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = `
+        <span>${message}</span>
+        <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+    
+    setTimeout(() => {
+        if (alert.parentElement) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+// Cerrar modales al hacer clic fuera
+window.onclick = function(event) {
+    const tramiteModal = document.getElementById('tramiteModal');
+    const confirmModal = document.getElementById('confirmDeleteModal');
+    
+    if (event.target === tramiteModal) {
+        closeTramiteModal();
+    }
+    if (event.target === confirmModal) {
+        closeConfirmDeleteModal();
+    }
+}
+
+// Funciones existentes para la tabla (copiar, descargar, etc.)
+function copyTable() {
+    const table = document.getElementById('dataTable');
+    const range = document.createRange();
+    range.selectNode(table);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    showAlert('Tabla copiada al portapapeles', 'success');
+}
+
+function downloadCSV() {
+    const table = document.getElementById('dataTable');
+    const rows = table.querySelectorAll('tr');
+    let csv = [];
+    
+    for (let row of rows) {
+        const cols = row.querySelectorAll('td, th');
+        let csvRow = [];
+        for (let col of cols) {
+            if (col.cellIndex < 4) { // Solo las primeras 4 columnas
+                csvRow.push('"' + col.textContent.replace(/"/g, '""') + '"');
+            }
+        }
+        csv.push(csvRow.join(','));
+    }
+    
+    const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const downloadLink = document.createElement('a');
+    downloadLink.download = `tramites_${document.querySelector('h1').textContent}.csv`;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.click();
+}
+
+function printTable() {
+    window.print();
+}
+
+function filterTable() {
+    const searchInput = document.getElementById('search');
+    const filter = searchInput.value.toLowerCase();
+    const table = document.getElementById('dataTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+}
+
+function sortTable(columnIndex) {
+    const table = document.getElementById('dataTable');
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
+    
+    rows.sort((a, b) => {
+        const aText = a.cells[columnIndex].textContent.trim();
+        const bText = b.cells[columnIndex].textContent.trim();
+        return aText.localeCompare(bText);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+    updateRowNumbers();
+}
+</script>
+
 {% endblock %}

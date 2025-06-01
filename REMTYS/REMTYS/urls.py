@@ -4,8 +4,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from tramites.views import (
     inicio, ver_tramites, ver_detalle_tramite, login_view, logout_view,
-    get_users_api, create_user_api, update_user_api, delete_user_api
+    get_users_api, create_user_api, update_user_api, delete_user_api,
+    # AGREGAR ESTAS NUEVAS IMPORTACIONES:
+    create_tramite_api, update_tramite_api, delete_tramite_api
 )
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,11 +18,16 @@ urlpatterns = [
     path('tramites/<int:clasificacion_id>/', ver_tramites, name='ver_tramites'),
     path('tramite/<int:tramite_id>/', ver_detalle_tramite, name='ver_detalle_tramite'),
     
-    # APIs para el panel de administración
+    # APIs para el panel de administración de usuarios
     path('api/users/', get_users_api, name='get_users_api'),
     path('api/users/create/', create_user_api, name='create_user_api'),
     path('api/users/update/', update_user_api, name='update_user_api'),
     path('api/users/delete/', delete_user_api, name='delete_user_api'),
+    
+    # AGREGAR ESTAS NUEVAS RUTAS PARA TRÁMITES:
+    path('api/tramites/create/', create_tramite_api, name='create_tramite_api'),
+    path('api/tramites/update/', update_tramite_api, name='update_tramite_api'),
+    path('api/tramites/delete/', delete_tramite_api, name='delete_tramite_api'),
 ]
 
 # Servir archivos media en desarrollo
