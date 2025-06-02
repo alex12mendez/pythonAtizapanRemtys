@@ -7,6 +7,13 @@ from pathlib import Path
 import os
 import pymysql
 
+# Debug temporal - ver qué variables tenemos
+print("=== DEBUG RAILWAY VARIABLES ===")
+print(f"MYSQL_DATABASE: {os.environ.get('MYSQL_DATABASE')}")
+print(f"MYSQL_HOST: {os.environ.get('MYSQL_HOST')}")
+print(f"MYSQL_USER: {os.environ.get('MYSQL_USER')}")
+print("===============================")
+
 # Configuración para usar PyMySQL como MySQL client
 pymysql.install_as_MySQLdb()
 
