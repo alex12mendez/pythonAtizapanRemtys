@@ -21,7 +21,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-a&dr!o7ok8x)#gnd-r)(_
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Detectar si estamos en Railway
-RAILWAY_ENVIRONMENT = os.environ.get('RAILWAY_ENVIRONMENT', 'False') == 'True'
+RAILWAY_ENVIRONMENT = os.environ.get('RAILWAY_ENVIRONMENT') is not None
 
 ALLOWED_HOSTS = []
 if RAILWAY_ENVIRONMENT:
