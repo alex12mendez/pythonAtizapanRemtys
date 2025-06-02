@@ -6,7 +6,6 @@ Configurado para desarrollo local y Railway.
 from pathlib import Path
 import os
 import pymysql
-from decouple import config
 from urllib.parse import urlparse
 
 # Configuración para usar PyMySQL como MySQL client
@@ -16,13 +15,13 @@ pymysql.install_as_MySQLdb()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-a&dr!o7ok8x)#gnd-r)(_$qee887eg4+2ya1ycu*m=$q_tyb*y')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-a&dr!o7ok8x)#gnd-r)(_$qee887eg4+2ya1ycu*m=$q_tyb*y')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Detectar si estamos en Railway
-RAILWAY_ENVIRONMENT = config('RAILWAY_ENVIRONMENT', default=False, cast=bool)
+RAILWAY_ENVIRONMENT = os.environ.get('RAILWAY_ENVIRONMENT', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 if RAILWAY_ENVIRONMENT:
@@ -74,7 +73,7 @@ WSGI_APPLICATION = 'REMTYS.wsgi.application'
 # Database configuration
 if RAILWAY_ENVIRONMENT:
     # Configuración para Railway (usando DATABASE_URL)
-    database_url = config('DATABASE_URL', default='')
+    database_url = os.environ.get('DATABASE_URL', '')
     if database_url:
         url = urlparse(database_url)
         DATABASES = {
@@ -96,11 +95,11 @@ if RAILWAY_ENVIRONMENT:
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.mysql',
-                'NAME': config('DB_NAME', default='railway'),
-                'USER': config('DB_USER', default='root'),
-                'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST', default='localhost'),
-                'PORT': config('DB_PORT', default='3306'),
+                'NAME': os.environ.get('DB_NAME', 'railway'),
+                'USER': os.environ.get('DB_USER', 'root'),
+                'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+                'HOST': os.environ.get('DB_HOST', 'localhost'),
+                'PORT': os.environ.get('DB_PORT', '3306'),
                 'OPTIONS': {
                     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                     'charset': 'utf8mb4',
@@ -112,11 +111,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': config('DB_NAME', default='remtys_db'),
-            'USER': config('DB_USER', default='root'),
-            'PASSWORD': config('DB_PASSWORD', default='12345678'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='3306'),
+            'NAME': os.environ.get('DB_NAME', 'remtys_db'),
+            'USER': os.environ.get('DB_USER', 'root'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', '12345678'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                 'charset': 'utf8mb4',
