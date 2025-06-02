@@ -5,8 +5,12 @@ from django.conf.urls.static import static
 from tramites.views import (
     inicio, ver_tramites, ver_detalle_tramite, login_view, logout_view,
     get_users_api, create_user_api, update_user_api, delete_user_api,
-    # AGREGAR ESTAS NUEVAS IMPORTACIONES:
-    create_tramite_api, update_tramite_api, delete_tramite_api
+    create_tramite_api, update_tramite_api, delete_tramite_api,
+    # NUEVAS IMPORTACIONES PARA DETALLE:
+    get_tramite_detail_api, update_tramite_detail_api, update_modalidad_api,
+    update_requisito_api, update_costo_api, update_opcion_pago_api,
+    update_fundamento_juridico_api, update_informacion_adicional_api,
+    update_oficina_atencion_api
 )
 
 
@@ -24,10 +28,21 @@ urlpatterns = [
     path('api/users/update/', update_user_api, name='update_user_api'),
     path('api/users/delete/', delete_user_api, name='delete_user_api'),
     
-    # AGREGAR ESTAS NUEVAS RUTAS PARA TRÁMITES:
+    # APIs para trámites básicos
     path('api/tramites/create/', create_tramite_api, name='create_tramite_api'),
     path('api/tramites/update/', update_tramite_api, name='update_tramite_api'),
     path('api/tramites/delete/', delete_tramite_api, name='delete_tramite_api'),
+    
+    # NUEVAS APIs PARA DETALLE DE TRÁMITES:
+    path('api/tramite/<int:tramite_id>/detail/', get_tramite_detail_api, name='get_tramite_detail_api'),
+    path('api/tramite/detail/update/', update_tramite_detail_api, name='update_tramite_detail_api'),
+    path('api/modalidad/update/', update_modalidad_api, name='update_modalidad_api'),
+    path('api/requisito/update/', update_requisito_api, name='update_requisito_api'),
+    path('api/costo/update/', update_costo_api, name='update_costo_api'),
+    path('api/opcion-pago/update/', update_opcion_pago_api, name='update_opcion_pago_api'),
+    path('api/fundamento-juridico/update/', update_fundamento_juridico_api, name='update_fundamento_juridico_api'),
+    path('api/informacion-adicional/update/', update_informacion_adicional_api, name='update_informacion_adicional_api'),
+    path('api/oficina-atencion/update/', update_oficina_atencion_api, name='update_oficina_atencion_api'),
 ]
 
 # Servir archivos media en desarrollo
