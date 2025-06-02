@@ -1,1 +1,1 @@
-web: gunicorn REMTYS.wsgi --log-file -
+web: cd REMTYS && gunicorn REMTYS.wsgi --log-file -
