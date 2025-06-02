@@ -6,12 +6,14 @@ Configurado para desarrollo local y Railway.
 from pathlib import Path
 import os
 import pymysql
+from urllib.parse import urlparse
 
 # Debug temporal - ver qué variables tenemos
 print("=== DEBUG RAILWAY VARIABLES ===")
 print(f"MYSQL_DATABASE: {os.environ.get('MYSQL_DATABASE')}")
 print(f"MYSQL_HOST: {os.environ.get('MYSQL_HOST')}")
 print(f"MYSQL_USER: {os.environ.get('MYSQL_USER')}")
+print(f"MYSQL_URL: {os.environ.get('MYSQL_URL')}")
 print("===============================")
 
 # Configuración para usar PyMySQL como MySQL client
@@ -77,11 +79,28 @@ TEMPLATES = [
 WSGI_APPLICATION = 'REMTYS.wsgi.application'
 
 # Database configuration
-# Railway proporciona variables individuales de MySQL
-MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE')
+# Usar MYSQL_URL si está disponible (conexión privada de Railway)
+MYSQL_URL = os.environ.get('MYSQL_URL')
 
-if MYSQL_DATABASE:
-    # Configuración para Railway usando variables individuales
+if MYSQL_URL:
+    # Parsear la URL de MySQL
+    url = urlparse(MYSQL_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': url.path[1:],  # Remove leading slash
+            'USER': url.username,
+            'PASSWORD': url.password,
+            'HOST': url.hostname,
+            'PORT': url.port or 3306,
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                'charset': 'utf8mb4',
+            },
+        }
+    }
+elif os.environ.get('MYSQL_DATABASE'):
+    # Fallback a variables individuales
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
