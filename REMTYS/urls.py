@@ -10,7 +10,9 @@ from tramites.views import (
     get_tramite_detail_api, update_tramite_detail_api, update_modalidad_api,
     update_requisito_api, update_costo_api, update_opcion_pago_api,
     update_fundamento_juridico_api, update_informacion_adicional_api,
-    update_oficina_atencion_api
+    update_oficina_atencion_api,
+    # NUEVA IMPORTACIÓN PARA BÚSQUEDA:
+    buscar_api
 )
 
 
@@ -21,6 +23,9 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('tramites/<int:clasificacion_id>/', ver_tramites, name='ver_tramites'),
     path('tramite/<int:tramite_id>/', ver_detalle_tramite, name='ver_detalle_tramite'),
+    
+    # API para búsqueda
+    path('api/buscar/', buscar_api, name='buscar_api'),
     
     # APIs para el panel de administración de usuarios
     path('api/users/', get_users_api, name='get_users_api'),
@@ -45,7 +50,9 @@ urlpatterns = [
     path('api/oficina-atencion/update/', update_oficina_atencion_api, name='update_oficina_atencion_api'),
 ]
 
-# Servir archivos media en desarrollo
+# Servir archivos media y static en desarrollo
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    # Corregir esta línea - convertir Path a string
+    if hasattr(settings, 'STATICFILES_DIRS') and settings.STATICFILES_DIRS:
+        urlpatterns += static(settings.STATIC_URL, document_root=str(settings.STATICFILES_DIRS[0]))

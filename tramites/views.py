@@ -1021,3 +1021,82 @@ def update_oficina_atencion_api(request):
         return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+    
+    
+    # Agregar esta función a tu archivo views.py
+
+from django.http import JsonResponse
+from django.db.models import Q
+import unicodedata
+import re
+
+def buscar_api(request):
+    """
+    API para buscar trámites y clasificaciones
+    Busca en nombres de clasificaciones y trámites con tolerancia a acentos
+    """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    query = request.GET.get('q', '').strip()
+    
+    if not query:
+        return JsonResponse({
+            'clasificaciones': [],
+            'tramites': [],
+            'total': 0
+        })
+    
+    # Función para normalizar texto (quitar acentos)
+    def normalizar_texto(texto):
+        # Convertir a minúsculas y quitar acentos
+        texto = texto.lower()
+        return ''.join(c for c in unicodedata.normalize('NFD', texto)
+                      if unicodedata.category(c) != 'Mn')
+    
+    # Normalizar la consulta
+    query_normalizada = normalizar_texto(query)
+    
+    # Buscar en clasificaciones
+    clasificaciones = ClasificacionTramites.objects.all()
+    clasificaciones_encontradas = []
+    
+    for clasificacion in clasificaciones:
+        nombre_normalizado = normalizar_texto(clasificacion.nombre)
+        if query_normalizada in nombre_normalizado:
+            clasificaciones_encontradas.append({
+                'id': clasificacion.id,
+                'nombre': clasificacion.nombre,
+                'imagen': clasificacion.imagen.url if clasificacion.imagen else None,
+                'tipo': 'clasificacion'
+            })
+    
+    # Buscar en trámites activos
+    tramites = Tramite.objects.filter(estatus='Activo').select_related('clasificacion')
+    tramites_encontrados = []
+    
+    for tramite in tramites:
+        nombre_normalizado = normalizar_texto(tramite.nombre)
+        if query_normalizada in nombre_normalizado:
+            tramites_encontrados.append({
+                'id': tramite.id,
+                'nombre': tramite.nombre,
+                'descripcion': tramite.descripcion[:150] + '...' if len(tramite.descripcion) > 150 else tramite.descripcion,
+                'clasificacion_id': tramite.clasificacion.id,
+                'clasificacion_nombre': tramite.clasificacion.nombre,
+                'tipo': 'tramite'
+            })
+    
+    # Limitar resultados
+    clasificaciones_encontradas = clasificaciones_encontradas[:10]
+    tramites_encontrados = tramites_encontrados[:20]
+    
+    total = len(clasificaciones_encontradas) + len(tramites_encontrados)
+    
+    return JsonResponse({
+        'clasificaciones': clasificaciones_encontradas,
+        'tramites': tramites_encontrados,
+        'total': total,
+        'query': query
+    })

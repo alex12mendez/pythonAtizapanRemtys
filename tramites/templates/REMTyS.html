@@ -4,6 +4,39 @@
 {% block title %}Inicio | REMTYS{% endblock %}
 
 {% block content %}
+<!-- Sección Hero con mensaje de bienvenida E ÍCONOS -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            BIENVENIDO A<br>
+            <span class="hero-highlight">TRÁMITES Y SERVICIOS</span>
+        </h1>
+        <div class="search-container">
+            <input type="text" class="search-bar" id="searchInput" placeholder="Buscar trámite o servicio">
+            <button class="search-button" id="searchButton">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button class="clear-search" id="clearSearch" style="display: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Sección con SOLO el título del catálogo -->
+<section class="catalog-intro-section">
+    <!-- Título principal del catálogo - SOLO -->
+    <div class="catalog-title-container">
+        <h2 class="catalog-main-title" id="catalogTitle">
+            CATÁLOGO MUNICIPAL DE<br>
+            <span class="catalog-highlight">TRÁMITES Y SERVICIOS</span>
+        </h2>
+    </div>
+</section>
 
 <!-- Panel de Administración (solo para superadmin) -->
 {% if user.is_authenticated and user.is_superuser %}
@@ -123,8 +156,19 @@
 <div class="admin-separator"></div>
 {% endif %}
 
-<!-- Sección de Áreas (para todos los usuarios) -->
-<div class="areas-grid">
+<!-- Contenedor de resultados de búsqueda -->
+<div class="search-results-container" id="searchResults" style="display: none;">
+    <div class="search-info">
+        <h3 id="searchResultsTitle">Resultados de búsqueda</h3>
+        <button class="btn-back-catalog" onclick="showCatalog()">
+            <i class="fas fa-arrow-left"></i> Volver al catálogo
+        </button>
+    </div>
+    <div id="searchResultsContent"></div>
+</div>
+
+<!-- Sección de Áreas (catálogo original) -->
+<div class="areas-grid" id="catalogGrid">
     {% for clasificacion in clasificaciones %}
         <a href="{% url 'ver_tramites' clasificacion.id %}" class="area-container">
             <div class="area-item">
@@ -137,10 +181,137 @@
     {% endfor %}
 </div>
 
+<style>
+/* Estilos para la búsqueda */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.clear-search {
+    position: absolute;
+    right: 50px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: #666;
+    display: none;
+}
+
+.clear-search:hover {
+    color: #333;
+}
+
+.search-results-container {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.search-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.search-info h3 {
+    margin: 0;
+    color: #333;
+}
+
+.btn-back-catalog {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.btn-back-catalog:hover {
+    background: #0056b3;
+}
+
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-section h4 {
+    color: #495057;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 0.5rem;
+}
+
+.search-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s;
+    cursor: pointer;
+}
+
+.search-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.search-item h5 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.search-item p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.search-item-type {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.search-item-type.clasificacion {
+    background: #28a745;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.loading-search {
+    text-align: center;
+    padding: 2rem;
+    color: #007bff;
+}
+</style>
+
 <script>
 // Variables globales
 let currentEditUserId = null;
 let allClasificaciones = [];
+let searchTimeout = null;
+let isSearching = false;
 
 // Cargar datos al inicio
 document.addEventListener('DOMContentLoaded', function() {
@@ -148,7 +319,232 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('usersTable')) {
         loadUsers();
     }
+    
+    // Configurar búsqueda
+    setupSearch();
 });
+
+// Configurar funcionalidad de búsqueda
+function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const clearSearch = document.getElementById('clearSearch');
+    
+    // Búsqueda en tiempo real mientras escribe
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length === 0) {
+            showCatalog();
+            clearSearch.style.display = 'none';
+            return;
+        }
+        
+        if (query.length >= 2) {
+            clearSearch.style.display = 'block';
+            searchTimeout = setTimeout(() => {
+                performSearch(query);
+            }, 300); // Esperar 300ms después de que termine de escribir
+        }
+    });
+    
+    // Búsqueda al hacer clic en el botón
+    searchButton.addEventListener('click', function() {
+        const query = searchInput.value.trim();
+        if (query) {
+            performSearch(query);
+            // Scroll inmediato hacia los resultados al hacer clic en la lupa
+            setTimeout(() => {
+                const searchResultsElement = document.getElementById('searchResults');
+                if (searchResultsElement.style.display !== 'none') {
+                    searchResultsElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }
+            }, 200);
+        }
+    });
+    
+    // Búsqueda al presionar Enter
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value.trim();
+            if (query) {
+                performSearch(query);
+                // Scroll hacia los resultados al presionar Enter
+                setTimeout(() => {
+                    const searchResultsElement = document.getElementById('searchResults');
+                    if (searchResultsElement.style.display !== 'none') {
+                        searchResultsElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }
+                }, 200);
+            }
+        }
+    });
+    
+    // Limpiar búsqueda
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        showCatalog();
+        clearSearch.style.display = 'none';
+        searchInput.focus();
+    });
+}
+
+// Realizar búsqueda
+async function performSearch(query) {
+    if (isSearching) return;
+    
+    isSearching = true;
+    showSearchResults();
+    showLoadingSearch();
+    
+    try {
+        const response = await fetch(`/api/buscar/?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displaySearchResults(data, query);
+        } else {
+            showSearchError('Error al realizar la búsqueda');
+        }
+    } catch (error) {
+        showSearchError('Error de conexión: ' + error.message);
+    } finally {
+        isSearching = false;
+    }
+}
+
+// Mostrar contenedor de resultados
+function showSearchResults() {
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('catalogGrid').style.display = 'none';
+    
+    // Scroll automático hacia los resultados con animación suave
+    setTimeout(() => {
+        const searchResultsElement = document.getElementById('searchResults');
+        searchResultsElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }, 100); // Pequeño delay para que el elemento se muestre primero
+}
+
+// Mostrar catálogo original
+function showCatalog() {
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('catalogGrid').style.display = 'grid';
+    updateCatalogTitle();
+    
+    // Scroll suave hacia el catálogo (título principal)
+    setTimeout(() => {
+        const catalogTitle = document.getElementById('catalogTitle');
+        catalogTitle.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }, 100);
+}
+
+// Actualizar título del catálogo
+function updateCatalogTitle() {
+    document.getElementById('catalogTitle').innerHTML = `
+        CATÁLOGO MUNICIPAL DE<br>
+        <span class="catalog-highlight">TRÁMITES Y SERVICIOS</span>
+    `;
+}
+
+// Mostrar indicador de carga
+function showLoadingSearch() {
+    document.getElementById('searchResultsContent').innerHTML = `
+        <div class="loading-search">
+            <i class="fas fa-spinner fa-spin"></i> Buscando...
+        </div>
+    `;
+}
+
+// Mostrar error de búsqueda
+function showSearchError(message) {
+    document.getElementById('searchResultsContent').innerHTML = `
+        <div class="no-results">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>${message}</p>
+        </div>
+    `;
+}
+
+// Mostrar resultados de búsqueda
+function displaySearchResults(data, query) {
+    const { clasificaciones, tramites, total } = data;
+    
+    // Actualizar título
+    document.getElementById('searchResultsTitle').innerHTML = `
+        Resultados para "<strong>${query}</strong>" (${total} encontrados)
+    `;
+    
+    let html = '';
+    
+    if (total === 0) {
+        html = `
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h4>No se encontraron resultados</h4>
+                <p>No hay trámites o servicios que coincidan con "<strong>${query}</strong>"</p>
+                <p>Intenta con otros términos de búsqueda</p>
+            </div>
+        `;
+    } else {
+        // Mostrar clasificaciones encontradas
+        if (clasificaciones.length > 0) {
+            html += `
+                <div class="search-section">
+                    <h4><i class="fas fa-folder"></i> Áreas (${clasificaciones.length})</h4>
+            `;
+            
+            clasificaciones.forEach(clasificacion => {
+                html += `
+                    <div class="search-item" onclick="window.location.href='/tramites/${clasificacion.id}/'">
+                        <span class="search-item-type clasificacion">ÁREA</span>
+                        <h5>${clasificacion.nombre}</h5>
+                        <p>Ver todos los trámites de esta área</p>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
+        // Mostrar trámites encontrados
+        if (tramites.length > 0) {
+            html += `
+                <div class="search-section">
+                    <h4><i class="fas fa-file-alt"></i> Trámites (${tramites.length})</h4>
+            `;
+            
+            tramites.forEach(tramite => {
+                html += `
+                    <div class="search-item" onclick="window.location.href='/tramite/${tramite.id}/'">
+                        <span class="search-item-type">TRÁMITE</span>
+                        <h5>${tramite.nombre}</h5>
+                        <p>${tramite.descripcion}</p>
+                        <small><i class="fas fa-tag"></i> ${tramite.clasificacion_nombre}</small>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+    }
+    
+    document.getElementById('searchResultsContent').innerHTML = html;
+}
+
+// === RESTO DEL CÓDIGO EXISTENTE PARA USUARIOS ===
 
 // Función para cargar usuarios
 async function loadUsers() {
@@ -172,6 +568,8 @@ async function loadUsers() {
 // Función para poblar la tabla de usuarios
 function populateUsersTable(users) {
     const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = '';
     
     users.forEach(user => {
@@ -214,6 +612,8 @@ function createUserRow(user) {
 // Función para poblar el select de clasificaciones
 function populateClasificacionSelect() {
     const select = document.getElementById('clasificacion');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">Sin área asignada</option>';
     
     allClasificaciones.forEach(clasificacion => {
@@ -383,7 +783,7 @@ function showAlert(message, type) {
     `;
     
     // Insertar al inicio del contenido
-    const content = document.querySelector('main');
+    const content = document.querySelector('main') || document.body;
     content.insertBefore(alert, content.firstChild);
     
     // Auto-remover después de 5 segundos
