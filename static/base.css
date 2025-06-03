@@ -751,6 +751,24 @@ body {
     border: 1px solid #ffeaa7;
 }
 
+
+.location-btn {
+    position: fixed !important;
+    top: 0px !important;
+    left: 290px;
+    z-index: 9999 !important;
+    /* resto de estilos... */
+}
+
+.social-icons {
+    position: fixed !important;
+    top: 0px !important;
+    right: 140px;
+    z-index: 9998 !important;
+    /* resto de estilos... */
+}
+
+
 /* MEDIA QUERIES MEJORADOS */
 
 /* Tablet grande (992px - 1199px) */
