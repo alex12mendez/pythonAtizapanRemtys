@@ -213,3 +213,133 @@ class TramiteRelacionado(models.Model):
 
     def __str__(self):
         return f'{self.tramite_origen.nombre} -> {self.tramite_relacionado.nombre}'
+    
+    # Agregar este modelo al final de tu models.py existente
+
+from datetime import datetime
+import uuid
+
+class ProtestaCiudadana(models.Model):
+    MOTIVO_CHOICES = (
+        (1, 'NIEGUE LA GESTION DE SU TRAMITE O SERVICIO SIN CAUSA JUSTIFICADA'),
+        (2, 'EXIJA REQUISITOS O DOCUMENTOS ADICIONALES'),
+        (3, 'EXIJA UN FORMATO ADICIONAL O DIFERENTE AL SEÑALADO EN EL REGISTRO DE TRAMITES Y SERVICIOS'),
+        (4, 'PRETENDA COBRAR CUOTAS ADICIONALES O DISTINTAS A LAS PUBLICADAS'),
+        (5, 'NO RESPETE LA VIGENCIA DEL TRAMITE O SERVICIO'),
+        (6, 'SE REALICEN INSPECCIONES O VERIFICACIONES QUE NO CORRESPONDAN O QUE EXCEDAN LO PERMITIDO O PREVISTO'),
+        (7, 'NO SE RESPETEN LOS CRITERIOS PARA RESOLVER SU SOLICITUD'),
+        (8, 'SE PROPORCIONEN DATOS DE CONTACTO ERRONEOS DEL RESPONSABLE DEL TRAITE O SERVICIO'),
+        (9, 'OTRO'),
+    )
+    
+    TIPO_TRAMITE_CHOICES = (
+        ('C', 'Ciudadano'),
+        ('E', 'Empresarial'),
+    )
+    
+    PRESENCIAL_CHOICES = (
+        (1, 'Sí'),
+        (2, 'No'),
+    )
+    
+    CALIFICACION_CHOICES = [(i, str(i)) for i in range(1, 11)]
+    
+    ESTATUS_CHOICES = (
+        ('RECIBIDA', 'Recibida'),
+        ('EN_PROCESO', 'En Proceso'),
+        ('APROBADA', 'Aprobada'),
+        ('NEGADA', 'Negada'),
+    )
+    
+    # Campos automáticos
+    folio = models.CharField(max_length=20, unique=True, editable=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='RECIBIDA')
+    
+    # Datos del trámite (vienen de detalle_tramite.html)
+    tramite = models.ForeignKey(Tramite, on_delete=models.CASCADE, related_name='protestas')
+    area = models.CharField(max_length=300)  # tramite.clasificacion.nombre
+    responsable = models.CharField(max_length=300)  # Campo que escribe el usuario
+    nombre_tramite = models.TextField()  # tramite.nombre
+    objeto_protesta = models.TextField()  # tramite.nombre (mismo que nombre_tramite)
+    
+    # Datos del motivo y procedimiento
+    clv_motivo = models.IntegerField(choices=MOTIVO_CHOICES)
+    tipo_tramite = models.CharField(max_length=1, choices=TIPO_TRAMITE_CHOICES, default='C')
+    folio_referencia = models.CharField(max_length=200)  # Folio/clave que proporciona el usuario
+    es_presencial = models.IntegerField(choices=PRESENCIAL_CHOICES, default=1)
+    lugar_administrativa = models.CharField(max_length=300, blank=True)  # Si es presencial
+    liga_internet = models.URLField(blank=True)  # Si no es presencial
+    fecha_tramite = models.DateField()
+    hora_tramite = models.TimeField()
+    
+    # Datos económicos
+    rfc = models.CharField(max_length=14)
+    calificacion_afectacion = models.IntegerField(choices=CALIFICACION_CHOICES, default=1)
+    costo_afectacion = models.DecimalField(max_digits=15, decimal_places=2)
+    costo_letra_afectacion = models.CharField(max_length=480)
+    empleos_afectacion = models.IntegerField()
+    
+    # Datos personales del solicitante
+    nombre = models.CharField(max_length=200)
+    apellido_paterno = models.CharField(max_length=200)
+    apellido_materno = models.CharField(max_length=200)
+    estado = models.CharField(max_length=100)
+    municipio = models.CharField(max_length=100)
+    calle = models.CharField(max_length=200)
+    num_ext = models.CharField(max_length=9)
+    num_int = models.CharField(max_length=9, blank=True)
+    colonia = models.CharField(max_length=299)
+    codigo_postal = models.CharField(max_length=6)
+    referencias_domicilio = models.CharField(max_length=300, blank=True)
+    
+    # Datos de contacto
+    email = models.EmailField()
+    telefono = models.CharField(max_length=10)
+    movil = models.CharField(max_length=10, blank=True)
+    
+    # Descripción y servidor público
+    descripcion_protesta = models.TextField()
+    servidor_publico = models.CharField(max_length=300)
+    
+    # Archivos
+    archivo_identificacion = models.FileField(upload_to='protestas/identificacion/', blank=True)
+    archivo_comprobante_dom = models.FileField(upload_to='protestas/comprobantes/', blank=True)
+    evidencia = models.FileField(upload_to='protestas/evidencias/', blank=True)
+    
+    class Meta:
+        db_table = 'protesta_ciudadana'
+        ordering = ['-fecha_creacion']
+        verbose_name = 'Protesta Ciudadana'
+        verbose_name_plural = 'Protestas Ciudadanas'
+    
+    def save(self, *args, **kwargs):
+        if not self.folio:
+            # Generar folio formato PC-20250604-001
+            today = datetime.now()
+            fecha_str = today.strftime('%Y%m%d')
+            
+            # Buscar el último folio del día
+            ultimo_folio = ProtestaCiudadana.objects.filter(
+                folio__startswith=f'PC-{fecha_str}-'
+            ).order_by('-folio').first()
+            
+            if ultimo_folio:
+                # Extraer el número secuencial y incrementar
+                ultimo_num = int(ultimo_folio.folio.split('-')[-1])
+                nuevo_num = ultimo_num + 1
+            else:
+                nuevo_num = 1
+            
+            self.folio = f'PC-{fecha_str}-{nuevo_num:03d}'
+        
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f'{self.folio} - {self.nombre} {self.apellido_paterno}'
+    
+    def get_motivo_display_text(self):
+        return dict(self.MOTIVO_CHOICES).get(self.clv_motivo, '')
+    
+    def get_nombre_completo(self):
+        return f'{self.nombre} {self.apellido_paterno} {self.apellido_materno}'

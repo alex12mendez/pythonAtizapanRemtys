@@ -1,0 +1,1229 @@
+/* ==================== ARREGLO DE ÍCONOS EN BOTONES ==================== */
+
+.action-btn i {
+    font-size: 14px !important;
+    line-height: 1 !important;
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.action-btn {
+    padding: 0 !important;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden !important;
+}
+
+/* Específicamente para cada tipo de botón usando colores institucionales */
+.action-btn.view-btn {
+    background-color: #56858d !important; /* Teal institucional */
+    color: white !important;
+}
+
+.action-btn.view-btn:hover {
+    background-color: #4a7179 !important;
+    transform: translateY(-2px);
+    color: white !important;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(86, 133, 141, 0.3);
+}
+
+.action-btn.edit-btn {
+    background-color: #6767a5 !important; /* Morado institucional */
+    color: white !important;
+}
+
+.action-btn.edit-btn:hover {
+    background-color: #5a5a8a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(103, 103, 165, 0.3);
+}
+
+.action-btn.delete-btn {
+    background-color: #b64f80 !important; /* Rosa institucional */
+    color: white !important;
+}
+
+.action-btn.delete-btn:hover {
+    background-color: #a0456e !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(182, 79, 128, 0.3);
+}
+
+/* Asegurar que no hay estilos conflictivos */
+.action-btn * {
+    pointer-events: none;
+}
+
+/* ===============================================
+   ATIZAPÁN DE ZARAGOZA - IDENTIDAD INSTITUCIONAL
+   =============================================== */
+
+/* Variables CSS con colores institucionales de Atizapán */
+:root {
+    /* Colores institucionales principales */
+    --atizapan-primary: #6767a5;        /* Morado institucional #444383 */
+    --atizapan-secondary: #56858d;       /* Teal institucional #56858d */
+    --atizapan-accent: #79b0cc;          /* Azul claro institucional #79b0cc */
+    --atizapan-tertiary: #b64f80;        /* Rosa institucional #b64f80 */
+    --atizapan-neutral: #585958;         /* Gris institucional #585958 */
+    
+    /* Colores de estado */
+    --atizapan-success: #56858d;
+    --atizapan-warning: #ffc107;
+    --atizapan-danger: #b64f80;
+    --atizapan-info: #79b0cc;
+    --atizapan-light: #f8f9fa;
+    --atizapan-dark: #585958;
+    
+    /* Gradiente institucional */
+    --atizapan-gradient: linear-gradient(135deg, #6767a5 0%, #56858d 50%, #79b0cc 100%);
+    --atizapan-gradient-alt: linear-gradient(135deg, #79b0cc 0%, #56858d 50%, #6767a5 100%);
+    
+    /* Sombras y efectos */
+    --atizapan-shadow: 0 10px 30px rgba(103, 103, 165, 0.15);
+    --atizapan-shadow-hover: 0 15px 40px rgba(103, 103, 165, 0.25);
+    --atizapan-border-radius: 12px;
+    --atizapan-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Importar tipografías institucionales */
+@import url('https://fonts.googleapis.com/css2?family=Newake:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Averta:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Contenedor principal con tipografía institucional */
+.protesta-pg-main,
+.atizapan-main {
+    font-family: 'Averta', 'Newake', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--atizapan-dark);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8f0f3 100%);
+    min-height: 100vh;
+}
+
+/* Headers con tipografía principal Newake */
+h1, h2, h3, h4, h5, h6,
+.atizapan-heading,
+.protesta-section-header-xz9,
+.protesta-search-title-xz9 {
+    font-family: 'Newake', 'Arial Black', Arial, sans-serif !important;
+    font-weight: 700;
+    color: var(--atizapan-primary);
+}
+
+/* Header mejorado con colores institucionales */
+.protesta-hdr-wrap,
+.atizapan-header {
+    background: var(--atizapan-gradient);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.protesta-hdr-wrap::before,
+.atizapan-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,100 0,80"/></svg>');
+    background-size: cover;
+}
+
+.protesta-logo-img,
+.atizapan-logo {
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+    transition: var(--atizapan-transition);
+}
+
+.protesta-logo-img:hover,
+.atizapan-logo:hover {
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* Card de búsqueda con colores institucionales */
+.protesta-search-card-xz9,
+.atizapan-search-card {
+    background: white;
+    border: none;
+    border-radius: var(--atizapan-border-radius);
+    box-shadow: var(--atizapan-shadow);
+    overflow: hidden;
+    transform: translateY(0);
+    transition: var(--atizapan-transition);
+    margin-bottom: 3rem;
+}
+
+.protesta-search-card-xz9:hover,
+.atizapan-search-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--atizapan-shadow-hover);
+}
+
+.protesta-search-header-xz9,
+.atizapan-search-header {
+    background: var(--atizapan-gradient);
+    color: white;
+    padding: 1.5rem;
+    border: none;
+    position: relative;
+}
+
+.protesta-search-header-xz9::before,
+.atizapan-search-header::before {
+    content: '🏛️';
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    opacity: 0.7;
+}
+
+.protesta-search-title-xz9,
+.atizapan-search-title {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.protesta-search-body-xz9,
+.atizapan-search-body {
+    padding: 2rem;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.protesta-search-label-xz9,
+.atizapan-search-label {
+    font-weight: 600;
+    color: var(--atizapan-primary);
+    margin-bottom: 1rem;
+    display: block;
+    font-size: 1rem;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-input-group-xz9,
+.atizapan-input-group {
+    position: relative;
+    margin-bottom: 0;
+    display: flex;
+}
+
+.protesta-search-input-xz9,
+.atizapan-search-input {
+    border: 2px solid var(--atizapan-secondary);
+    border-radius: var(--atizapan-border-radius) 0 0 var(--atizapan-border-radius);
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    transition: var(--atizapan-transition);
+    background: white;
+    box-shadow: inset 0 2px 4px rgba(103, 103, 165, 0.05);
+    flex: 1;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-search-input-xz9:focus,
+.atizapan-search-input:focus {
+    outline: none;
+    border-color: var(--atizapan-primary);
+    box-shadow: 0 0 0 0.25rem rgba(103, 103, 165, 0.15);
+    transform: translateY(-1px);
+}
+
+.protesta-search-btn-xz9,
+.atizapan-search-btn {
+    background: var(--atizapan-gradient);
+    border: 2px solid var(--atizapan-primary);
+    border-left: none;
+    border-radius: 0 var(--atizapan-border-radius) var(--atizapan-border-radius) 0;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    font-weight: 600;
+    transition: var(--atizapan-transition);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-search-btn-xz9::before,
+.atizapan-search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.protesta-search-btn-xz9:hover::before,
+.atizapan-search-btn:hover::before {
+    left: 100%;
+}
+
+.protesta-search-btn-xz9:hover,
+.atizapan-search-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(103, 103, 165, 0.3);
+}
+
+/* Alertas con colores institucionales */
+.protesta-alert-xz9,
+.atizapan-alert {
+    border: none;
+    border-radius: var(--atizapan-border-radius);
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.5s ease-out;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-alert-xz9::before,
+.atizapan-alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: currentColor;
+}
+
+.protesta-alert-success-xz9,
+.atizapan-alert-success {
+    background: linear-gradient(135deg, #e8f5f0 0%, #d4edda 100%);
+    color: #155724;
+    border-left: 4px solid var(--atizapan-success);
+}
+
+.protesta-alert-danger-xz9,
+.atizapan-alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border-left: 4px solid var(--atizapan-danger);
+}
+
+.protesta-alert-info-xz9,
+.atizapan-alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+    border-left: 4px solid var(--atizapan-info);
+}
+
+.protesta-alert-xz9 h5,
+.atizapan-alert h5 {
+    margin-bottom: 1rem;
+    font-weight: 700;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.protesta-badge-xz9,
+.atizapan-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    animation: pulse 2s infinite;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-badge-info-xz9,
+.atizapan-badge-info {
+    background: linear-gradient(135deg, var(--atizapan-info), var(--atizapan-secondary));
+    color: white;
+}
+
+.protesta-badge-warning-xz9,
+.atizapan-badge-warning {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #212529;
+}
+
+.protesta-badge-success-xz9,
+.atizapan-badge-success {
+    background: linear-gradient(135deg, var(--atizapan-success), var(--atizapan-secondary));
+    color: white;
+}
+
+.protesta-badge-danger-xz9,
+.atizapan-badge-danger {
+    background: linear-gradient(135deg, var(--atizapan-danger), var(--atizapan-tertiary));
+    color: white;
+}
+
+/* Secciones del formulario con identidad institucional */
+.protesta-section-xz9,
+.atizapan-section {
+    background: white;
+    border-radius: var(--atizapan-border-radius);
+    box-shadow: var(--atizapan-shadow);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: var(--atizapan-transition);
+}
+
+.protesta-section-xz9:hover,
+.atizapan-section:hover {
+    box-shadow: var(--atizapan-shadow-hover);
+}
+
+.protesta-section-header-xz9,
+.atizapan-section-header {
+    background: var(--atizapan-gradient);
+    color: white;
+    padding: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-align: center;
+    position: relative;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.protesta-section-header-xz9::after,
+.atizapan-section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+}
+
+.protesta-section-body-xz9,
+.atizapan-section-body {
+    padding: 2rem;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.protesta-info-text-xz9,
+.atizapan-info-text {
+    color: var(--atizapan-dark);
+    font-size: 1rem;
+    line-height: 1.7;
+    text-align: justify;
+    margin-bottom: 0;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+/* Formulario principal */
+.protesta-form-xz9,
+.atizapan-form {
+    background: white;
+    border-radius: var(--atizapan-border-radius);
+    box-shadow: var(--atizapan-shadow);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.protesta-form-group-xz9,
+.atizapan-form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.protesta-label-xz9,
+.atizapan-label {
+    color: var(--atizapan-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.95rem;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-required-xz9,
+.atizapan-required {
+    color: var(--atizapan-danger);
+    margin-left: 3px;
+}
+
+.protesta-input-xz9,
+.atizapan-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--atizapan-secondary);
+    border-radius: var(--atizapan-border-radius);
+    font-size: 0.95rem;
+    transition: var(--atizapan-transition);
+    background: white;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-input-xz9:focus,
+.atizapan-input:focus {
+    outline: none;
+    border-color: var(--atizapan-primary);
+    box-shadow: 0 0 0 0.25rem rgba(103, 103, 165, 0.15);
+    transform: translateY(-1px);
+}
+
+.protesta-input-xz9:read-only,
+.atizapan-input:read-only {
+    background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
+    color: var(--atizapan-dark);
+    font-weight: 500;
+}
+
+.protesta-textarea-xz9,
+.atizapan-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.protesta-select-xz9,
+.atizapan-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236767a5' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 2.5rem;
+}
+
+/* Radio buttons mejorados */
+.protesta-radio-group-xz9,
+.atizapan-radio-group {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.protesta-radio-item-xz9,
+.atizapan-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid var(--atizapan-secondary);
+    border-radius: 25px;
+    transition: var(--atizapan-transition);
+    cursor: pointer;
+    user-select: none;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-radio-item-xz9:hover,
+.atizapan-radio-item:hover {
+    background: var(--atizapan-light);
+    border-color: var(--atizapan-primary);
+    transform: translateY(-1px);
+}
+
+.protesta-radio-item-xz9 input[type="radio"],
+.atizapan-radio-item input[type="radio"] {
+    accent-color: var(--atizapan-primary);
+    transform: scale(1.2);
+}
+
+.protesta-radio-item-xz9:has(input[type="radio"]:checked),
+.atizapan-radio-item:has(input[type="radio"]:checked) {
+    background: var(--atizapan-gradient);
+    color: white;
+    border-color: var(--atizapan-primary);
+}
+
+/* Sistema de calificación */
+.protesta-rating-group-xz9,
+.atizapan-rating-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.protesta-rating-item-xz9,
+.atizapan-rating-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    background: white;
+    border: 2px solid var(--atizapan-secondary);
+    border-radius: var(--atizapan-border-radius);
+    transition: var(--atizapan-transition);
+    cursor: pointer;
+    position: relative;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-rating-item-xz9:hover,
+.atizapan-rating-item:hover {
+    background: var(--atizapan-light);
+    border-color: var(--atizapan-primary);
+    transform: translateY(-2px);
+}
+
+.protesta-rating-item-xz9:has(input[type="radio"]:checked),
+.atizapan-rating-item:has(input[type="radio"]:checked) {
+    background: var(--atizapan-gradient);
+    color: white;
+    border-color: var(--atizapan-primary);
+    box-shadow: 0 5px 15px rgba(103, 103, 165, 0.3);
+}
+
+.protesta-rating-label-xz9,
+.atizapan-rating-label {
+    font-weight: 700;
+    font-size: 1.2rem;
+    transition: var(--atizapan-transition);
+}
+
+/* Botón principal */
+.protesta-submit-btn-xz9,
+.atizapan-submit-btn {
+    background: var(--atizapan-gradient);
+    border: none;
+    color: white;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--atizapan-transition);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 25px rgba(103, 103, 165, 0.3);
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.protesta-submit-btn-xz9::before,
+.atizapan-submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.protesta-submit-btn-xz9:hover,
+.atizapan-submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(103, 103, 165, 0.4);
+}
+
+.protesta-submit-btn-xz9:hover::before,
+.atizapan-submit-btn:hover::before {
+    left: 100%;
+}
+
+.protesta-submit-btn-xz9:active,
+.atizapan-submit-btn:active {
+    transform: translateY(-1px);
+}
+
+.protesta-submit-btn-xz9:disabled,
+.atizapan-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* File upload mejorado */
+.protesta-file-group-xz9,
+.atizapan-file-group {
+    margin-bottom: 1.5rem;
+}
+
+.protesta-file-wrapper-xz9,
+.atizapan-file-wrapper {
+    position: relative;
+    overflow: hidden;
+    border: 2px dashed var(--atizapan-secondary);
+    border-radius: var(--atizapan-border-radius);
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    transition: var(--atizapan-transition);
+    padding: 2rem;
+    text-align: center;
+}
+
+.protesta-file-wrapper-xz9:hover,
+.atizapan-file-wrapper:hover {
+    border-color: var(--atizapan-primary);
+    background: var(--atizapan-light);
+    transform: translateY(-2px);
+}
+
+.protesta-file-wrapper-xz9.has-file,
+.atizapan-file-wrapper.has-file {
+    border-style: solid;
+    border-color: var(--atizapan-success);
+    background: linear-gradient(135deg, #e8f5f0 0%, #d4edda 100%);
+}
+
+.protesta-file-input-xz9,
+.atizapan-file-input {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+}
+
+.protesta-file-label-xz9,
+.atizapan-file-label {
+    display: block;
+    cursor: pointer;
+    color: var(--atizapan-primary);
+    font-weight: 600;
+    position: relative;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-file-label-xz9::before,
+.atizapan-file-label::before {
+    content: '📎';
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.protesta-file-label-xz9::after,
+.atizapan-file-label::after {
+    content: 'Haz clic para seleccionar archivo';
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-top: 0.5rem;
+}
+
+.protesta-file-wrapper-xz9.has-file .protesta-file-label-xz9::before,
+.atizapan-file-wrapper.has-file .atizapan-file-label::before {
+    content: '✅';
+}
+
+.protesta-file-wrapper-xz9.has-file .protesta-file-label-xz9::after,
+.atizapan-file-wrapper.has-file .atizapan-file-label::after {
+    content: 'Archivo seleccionado correctamente';
+}
+
+/* Mensajes de error */
+.protesta-error-xz9,
+.atizapan-error {
+    color: var(--atizapan-danger);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    display: none;
+    animation: shake 0.5s ease-in-out;
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-error-xz9.show,
+.atizapan-error.show {
+    display: block;
+}
+
+/* Modales mejorados */
+.protesta-modal-xz9 .modal-content,
+.atizapan-modal .modal-content {
+    border: none;
+    border-radius: var(--atizapan-border-radius);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.protesta-modal-xz9 .modal-header,
+.atizapan-modal .modal-header {
+    background: var(--atizapan-gradient);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+}
+
+.protesta-modal-xz9 .modal-title,
+.atizapan-modal .modal-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+.protesta-modal-xz9 .modal-body,
+.atizapan-modal .modal-body {
+    padding: 2rem;
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.protesta-modal-xz9 .modal-footer,
+.atizapan-modal .modal-footer {
+    border: none;
+    padding: 1.5rem;
+    background: var(--atizapan-light);
+}
+
+.protesta-folio-display-xz9,
+.atizapan-folio-display {
+    background: var(--atizapan-gradient);
+    color: white;
+    padding: 1rem;
+    border-radius: var(--atizapan-border-radius);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 2px;
+    margin: 1rem 0;
+    animation: glow 2s ease-in-out infinite alternate;
+    font-family: 'Newake', Arial, sans-serif;
+}
+
+/* Clases específicas para elementos del gobierno */
+.atizapan-gobierno-header {
+    background: var(--atizapan-gradient);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.atizapan-gobierno-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" fill="white" opacity="0.1"><circle cx="10" cy="10" r="2"/><circle cx="30" cy="10" r="2"/><circle cx="50" cy="10" r="2"/><circle cx="70" cy="10" r="2"/><circle cx="90" cy="10" r="2"/></svg>') repeat-x;
+}
+
+.atizapan-gobierno-title {
+    font-family: 'Newake', Arial, sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.atizapan-gobierno-subtitle {
+    font-family: 'Averta', Arial, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+    position: relative;
+    z-index: 2;
+}
+
+/* Elementos de navegación institucional */
+.atizapan-nav {
+    background: white;
+    border-bottom: 3px solid var(--atizapan-primary);
+    box-shadow: 0 2px 10px rgba(103, 103, 165, 0.1);
+}
+
+.atizapan-nav-link {
+    color: var(--atizapan-primary);
+    font-family: 'Averta', Arial, sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 1rem 1.5rem;
+    transition: var(--atizapan-transition);
+    border-bottom: 3px solid transparent;
+}
+
+.atizapan-nav-link:hover,
+.atizapan-nav-link.active {
+    color: var(--atizapan-secondary);
+    border-bottom-color: var(--atizapan-secondary);
+    background: linear-gradient(135deg, rgba(103, 103, 165, 0.05) 0%, rgba(86, 133, 141, 0.05) 100%);
+}
+
+/* Tarjetas de servicio */
+.atizapan-service-card {
+    background: white;
+    border-radius: var(--atizapan-border-radius);
+    box-shadow: var(--atizapan-shadow);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    transition: var(--atizapan-transition);
+    border-top: 4px solid var(--atizapan-secondary);
+}
+
+.atizapan-service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--atizapan-shadow-hover);
+    border-top-color: var(--atizapan-primary);
+}
+
+.atizapan-service-icon {
+    font-size: 3rem;
+    color: var(--atizapan-primary);
+    margin-bottom: 1rem;
+    display: block;
+    text-align: center;
+}
+
+.atizapan-service-title {
+    font-family: 'Newake', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--atizapan-primary);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.atizapan-service-description {
+    font-family: 'Averta', Arial, sans-serif;
+    color: var(--atizapan-dark);
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* Botones secundarios */
+.atizapan-btn-secondary {
+    background: var(--atizapan-secondary);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-family: 'Averta', Arial, sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--atizapan-transition);
+    box-shadow: 0 4px 15px rgba(86, 133, 141, 0.3);
+}
+
+.atizapan-btn-secondary:hover {
+    background: var(--atizapan-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(103, 103, 165, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.atizapan-btn-outline {
+    background: transparent;
+    color: var(--atizapan-primary);
+    border: 2px solid var(--atizapan-primary);
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-family: 'Averta', Arial, sans-serif;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: var(--atizapan-transition);
+}
+
+.atizapan-btn-outline:hover {
+    background: var(--atizapan-primary);
+    color: white;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+/* Footer institucional */
+.atizapan-footer {
+    background: var(--atizapan-gradient-alt);
+    color: white;
+    padding: 3rem 0 2rem 0;
+    margin-top: 4rem;
+}
+
+.atizapan-footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.atizapan-footer-section h4 {
+    font-family: 'Newake', Arial, sans-serif;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.atizapan-footer-section p,
+.atizapan-footer-section a {
+    font-family: 'Averta', Arial, sans-serif;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    line-height: 1.8;
+}
+
+.atizapan-footer-section a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.atizapan-footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 2rem;
+    text-align: center;
+    font-family: 'Averta', Arial, sans-serif;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Animaciones institucionales */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 20px rgba(103, 103, 165, 0.5); }
+    to { box-shadow: 0 0 30px rgba(86, 133, 141, 0.8); }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Clases de utilidad institucional */
+.atizapan-text-primary { color: var(--atizapan-primary) !important; }
+.atizapan-text-secondary { color: var(--atizapan-secondary) !important; }
+.atizapan-text-accent { color: var(--atizapan-accent) !important; }
+.atizapan-text-tertiary { color: var(--atizapan-tertiary) !important; }
+
+.atizapan-bg-primary { background-color: var(--atizapan-primary) !important; }
+.atizapan-bg-secondary { background-color: var(--atizapan-secondary) !important; }
+.atizapan-bg-accent { background-color: var(--atizapan-accent) !important; }
+.atizapan-bg-gradient { background: var(--atizapan-gradient) !important; }
+
+.atizapan-font-heading { font-family: 'Newake', Arial, sans-serif !important; }
+.atizapan-font-body { font-family: 'Averta', Arial, sans-serif !important; }
+
+/* Responsive design mejorado */
+@media (max-width: 768px) {
+    .protesta-search-card-xz9,
+    .protesta-section-xz9,
+    .protesta-form-xz9,
+    .atizapan-search-card,
+    .atizapan-section,
+    .atizapan-form {
+        margin-left: -15px;
+        margin-right: -15px;
+        border-radius: 0;
+    }
+    
+    .protesta-radio-group-xz9,
+    .atizapan-radio-group {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .protesta-rating-group-xz9,
+    .atizapan-rating-group {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.25rem;
+    }
+    
+    .protesta-rating-item-xz9,
+    .atizapan-rating-item {
+        padding: 0.75rem 0.25rem;
+    }
+    
+    .protesta-submit-btn-xz9,
+    .atizapan-submit-btn {
+        width: 100%;
+        padding: 1.2rem;
+    }
+    
+    .protesta-file-wrapper-xz9,
+    .atizapan-file-wrapper {
+        padding: 1.5rem;
+    }
+    
+    .atizapan-gobierno-title {
+        font-size: 2rem;
+    }
+    
+    .atizapan-footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .protesta-section-body-xz9,
+    .protesta-form-xz9,
+    .protesta-search-body-xz9,
+    .atizapan-section-body,
+    .atizapan-form,
+    .atizapan-search-body {
+        padding: 1.5rem;
+    }
+    
+    .protesta-rating-group-xz9,
+    .atizapan-rating-group {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .protesta-input-group-xz9,
+    .atizapan-input-group {
+        flex-direction: column;
+    }
+    
+    .protesta-search-input-xz9,
+    .protesta-search-btn-xz9,
+    .atizapan-search-input,
+    .atizapan-search-btn {
+        border-radius: var(--atizapan-border-radius);
+        border: 2px solid var(--atizapan-secondary);
+    }
+    
+    .protesta-search-btn-xz9,
+    .atizapan-search-btn {
+        margin-top: 0.5rem;
+    }
+    
+    .atizapan-gobierno-title {
+        font-size: 1.8rem;
+    }
+    
+    .atizapan-service-card {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}
+
+/* Estados de focus mejorados para accesibilidad */
+.protesta-input-xz9:focus,
+.protesta-search-input-xz9:focus,
+.protesta-submit-btn-xz9:focus,
+.protesta-search-btn-xz9:focus,
+.atizapan-input:focus,
+.atizapan-search-input:focus,
+.atizapan-submit-btn:focus,
+.atizapan-search-btn:focus {
+    outline: 3px solid rgba(103, 103, 165, 0.3);
+    outline-offset: 2px;
+}
+
+/* Mejoras para modo oscuro */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --atizapan-light: #2d3748;
+        --atizapan-dark: #f7fafc;
+    }
+    
+    .protesta-pg-main,
+    .atizapan-main {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    }
+    
+    .protesta-search-card-xz9,
+    .protesta-section-xz9,
+    .protesta-form-xz9,
+    .atizapan-search-card,
+    .atizapan-section,
+    .atizapan-form,
+    .atizapan-service-card {
+        background: #2d3748;
+        color: #f7fafc;
+    }
+    
+    .protesta-input-xz9,
+    .atizapan-input {
+        background: #4a5568;
+        color: #f7fafc;
+        border-color: #718096;
+    }
+}
+
+/* Compatibilidad con sistemas de gestión existentes */
+.sistema-atizapan,
+.plataforma-ciudadana,
+.portal-gobierno {
+    font-family: 'Averta', 'Newake', Arial, sans-serif;
+}
+
+.sistema-atizapan h1,
+.sistema-atizapan h2,
+.sistema-atizapan h3,
+.plataforma-ciudadana h1,
+.plataforma-ciudadana h2,
+.plataforma-ciudadana h3,
+.portal-gobierno h1,
+.portal-gobierno h2,
+.portal-gobierno h3 {
+    font-family: 'Newake', Arial, sans-serif;
+    color: var(--atizapan-primary);
+}
+
+/* Estilos para formularios gubernamentales */
+.formulario-gobierno .form-control {
+    border: 2px solid var(--atizapan-secondary);
+    border-radius: var(--atizapan-border-radius);
+    font-family: 'Averta', Arial, sans-serif;
+}
+
+.formulario-gobierno .form-control:focus {
+    border-color: var(--atizapan-primary);
+    box-shadow: 0 0 0 0.25rem rgba(103, 103, 165, 0.15);
+}
+
+.formulario-gobierno .btn-primary {
+    background: var(--atizapan-gradient);
+    border: none;
+    font-family: 'Averta', Arial, sans-serif;
+    font-weight: 600;
+}
+
+.formulario-gobierno label {
+    color: var(--atizapan-primary);
+    font-family: 'Averta', Arial, sans-serif;
+    font-weight: 600;
+}

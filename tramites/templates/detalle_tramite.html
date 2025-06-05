@@ -14,7 +14,18 @@
             </span>
         </div>
     </div>
-    
+<div class="protesta-ciudadana" style="border: 1px solid #ccc; padding: 20px; max-width: 300px;">
+  <p style="font-size: 14px; margin-top: 10px;">
+    Es una <strong>Herramienta Ciudadana</strong> que se pone a tu disposición para que puedas hacer peticiones y/o inconformarte por presuntas negativas y/o falta de respuesta en solicitudes de trámites y/o servicios previstos en la normatividad aplicable, en términos de lo dispuesto por la Ley de Mejora Regulatoria del Estado de México y sus Municipios.
+  </p>
+  
+  <!-- BOTÓN ACTUALIZADO CON PASO DE PARÁMETROS -->
+  <a href="{% url 'protesta' %}?tramite_id={{ tramite.id }}" 
+     style="display: inline-block; background-color: #d62982; color: white; padding: 10px 15px; text-decoration: none; margin-top: 10px;">
+     PRESENTAR PROTESTA
+  </a>
+</div>
+
     <!-- Menú de navegación lateral -->
     <div class="navigation-menu">
         <nav class="nav-sidebar">

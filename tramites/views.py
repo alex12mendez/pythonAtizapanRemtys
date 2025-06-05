@@ -12,7 +12,7 @@ from .models import (
     ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario,
     TramiteModalidad, TramiteRequisito, TramiteCosto, TramiteOpcionPago,
     TramiteFundamentoJuridico, TramiteInformacionAdicional, TramiteArchivoAnexo,
-    TramiteOficinaAtencion, TramiteRelacionado
+    TramiteOficinaAtencion, TramiteRelacionado, ProtestaCiudadana,
 )
 
 
@@ -1100,3 +1100,135 @@ def buscar_api(request):
         'total': total,
         'query': query
     })
+
+
+def protesta_view(request):
+    """Vista para manejar protestas ciudadanas"""
+    
+    # Obtener datos del trámite si viene tramite_id
+    tramite = None
+    tramite_id = request.GET.get('tramite_id')
+    
+    if tramite_id:
+        try:
+            tramite = get_object_or_404(Tramite, id=tramite_id)
+        except:
+            tramite = None
+    
+    # Si es POST, procesar el formulario de protesta
+    if request.method == 'POST':
+        try:
+            # Obtener datos del formulario
+            data = request.POST
+            files = request.FILES
+            
+            # Validar campos obligatorios
+            required_fields = [
+                'clv_motivo', 'folio_referencia', 'fecha_tramite', 'hora_tramite',
+                'rfc', 'calificacion_afectacion', 'costo_afectacion', 'costo_letra_afectacion',
+                'empleos_afectacion', 'nombre', 'apellido_paterno', 'apellido_materno',
+                'estado', 'municipio', 'calle', 'num_ext', 'colonia', 'codigo_postal',
+                'email', 'telefono', 'descripcion_protesta', 'servidor_publico'
+            ]
+            
+            for field in required_fields:
+                if not data.get(field, '').strip():
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'El campo {field} es obligatorio'
+                    })
+            
+            # Obtener el trámite
+            tramite_id = data.get('tramite_id')
+            if tramite_id:
+                tramite = get_object_or_404(Tramite, id=tramite_id)
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Trámite requerido'
+                })
+            
+            # Crear la protesta
+            protesta = ProtestaCiudadana.objects.create(
+                # Datos del trámite
+                tramite=tramite,
+                area=data.get('area', ''),
+                responsable=data.get('responsable', ''),
+                nombre_tramite=data.get('nombre_tramite', ''),
+                objeto_protesta=data.get('objeto_protesta', ''),
+                
+                # Datos del motivo y procedimiento
+                clv_motivo=int(data.get('clv_motivo')),
+                tipo_tramite=data.get('tipo_tramite', 'C'),
+                folio_referencia=data.get('folio_referencia'),
+                es_presencial=int(data.get('es_presencial', 1)),
+                lugar_administrativa=data.get('lugar_administrativa', ''),
+                liga_internet=data.get('liga_internet', ''),
+                fecha_tramite=data.get('fecha_tramite'),
+                hora_tramite=data.get('hora_tramite'),
+                
+                # Datos económicos
+                rfc=data.get('rfc').upper(),
+                calificacion_afectacion=int(data.get('calificacion_afectacion', 1)),
+                costo_afectacion=float(data.get('costo_afectacion', 0)),
+                costo_letra_afectacion=data.get('costo_letra_afectacion'),
+                empleos_afectacion=int(data.get('empleos_afectacion', 0)),
+                
+                # Datos personales
+                nombre=data.get('nombre').upper(),
+                apellido_paterno=data.get('apellido_paterno').upper(),
+                apellido_materno=data.get('apellido_materno').upper(),
+                estado=data.get('estado').upper(),
+                municipio=data.get('municipio').upper(),
+                calle=data.get('calle').upper(),
+                num_ext=data.get('num_ext').upper(),
+                num_int=data.get('num_int', '').upper(),
+                colonia=data.get('colonia').upper(),
+                codigo_postal=data.get('codigo_postal'),
+                referencias_domicilio=data.get('referencias_domicilio', '').upper(),
+                
+                # Datos de contacto
+                email=data.get('email'),
+                telefono=data.get('telefono'),
+                movil=data.get('movil', ''),
+                
+                # Descripción y servidor
+                descripcion_protesta=data.get('descripcion_protesta').upper(),
+                servidor_publico=data.get('servidor_publico').upper(),
+                
+                # Archivos
+                archivo_identificacion=files.get('archivo_identificacion'),
+                archivo_comprobante_dom=files.get('archivo_comprobante_dom'),
+                evidencia=files.get('evidencia'),
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Protesta ciudadana enviada exitosamente',
+                'folio': protesta.folio,
+                'protesta_id': protesta.id
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'Error al procesar la protesta: {str(e)}'
+            })
+    
+    # Si es GET con folio_busqueda, buscar protesta
+    folio_busqueda = request.GET.get('folio_busqueda')
+    protesta_encontrada = None
+    
+    if folio_busqueda:
+        try:
+            protesta_encontrada = ProtestaCiudadana.objects.get(folio=folio_busqueda.strip().upper())
+        except ProtestaCiudadana.DoesNotExist:
+            protesta_encontrada = None
+    
+    context = {
+        'tramite': tramite,
+        'protesta_encontrada': protesta_encontrada,
+        'folio_busqueda': folio_busqueda,
+    }
+    
+    return render(request, 'protesta.html', context)

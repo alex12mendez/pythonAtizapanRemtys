@@ -1,0 +1,688 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container protesta-pg-main">
+    <!-- Header de Protesta Ciudadana -->
+    <section class="protesta-hdr-wrap">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-6 text-left mb-4">
+                    <div>
+                        <a href="{% url 'REMTyS' %}">
+                            <img src="{% static 'imagenes/protestaini.png' %}" width="220" height="auto" alt="Protesta Ciudadana" class="protesta-logo-img" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Seguimiento -->
+    <section id="seguimiento" class="mb-5" style="margin-top: 50px;">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="protesta-search-card-xz9">
+                    <div class="protesta-search-header-xz9">
+                        <h3 class="protesta-search-title-xz9">Buscar Protesta Ciudadana</h3>
+                    </div>
+                    <div class="protesta-search-body-xz9">
+                        <form method="GET" action="{% url 'protesta' %}">
+                            <div class="protesta-form-group-xz9">
+                                <label for="folio_busqueda" class="protesta-search-label-xz9">SI YA TIENES UNA PROTESTA Y QUIERES DARLE SEGUIMIENTO: Ingresa tu folio de seguimiento:</label>
+                                <div class="protesta-input-group-xz9">
+                                    <input type="text" class="protesta-search-input-xz9" name="folio_busqueda" id="folio_busqueda" 
+                                           placeholder="Ej: PC-20250604-001" value="{{ folio_busqueda|default:'' }}">
+                                    <div class="input-group-append">
+                                        <button class="protesta-search-btn-xz9" type="submit">Buscar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        {% if folio_busqueda %}
+                            {% if protesta_encontrada %}
+                                <div class="protesta-alert-xz9 protesta-alert-success-xz9 mt-3">
+                                    <h5><strong>Protesta encontrada:</strong></h5>
+                                    <p><strong>Folio:</strong> {{ protesta_encontrada.folio }}</p>
+                                    <p><strong>Solicitante:</strong> {{ protesta_encontrada.get_nombre_completo }}</p>
+                                    <p><strong>Trámite:</strong> {{ protesta_encontrada.nombre_tramite }}</p>
+                                    <p><strong>Fecha de envío:</strong> {{ protesta_encontrada.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                                    <p><strong>Estatus:</strong> 
+                                        <span class="protesta-badge-xz9 {% if protesta_encontrada.estatus == 'RECIBIDA' %}protesta-badge-info-xz9{% elif protesta_encontrada.estatus == 'EN_PROCESO' %}protesta-badge-warning-xz9{% elif protesta_encontrada.estatus == 'APROBADA' %}protesta-badge-success-xz9{% else %}protesta-badge-danger-xz9{% endif %}">
+                                            {{ protesta_encontrada.get_estatus_display }}
+                                        </span>
+                                    </p>
+                                    <p><strong>Motivo:</strong> {{ protesta_encontrada.get_motivo_display_text }}</p>
+                                </div>
+                            {% else %}
+                                <div class="protesta-alert-xz9 protesta-alert-danger-xz9 mt-3">
+                                    No se encontró ninguna protesta con el folio: <strong>{{ folio_busqueda }}</strong>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario de Protesta -->
+    <section id="Formulario_Protesta" class="mb-5">
+        <div class="row justify-content-center mt-2">
+            <div class="col-12">
+                <div class="protesta-section-xz9">
+                    <div class="protesta-section-header-xz9">
+                        ¿Cuándo puedo presentar una protesta?
+                    </div>
+                    <div class="protesta-section-body-xz9">
+                        <p class="protesta-info-text-xz9">
+                            Si al solicitar un trámite o servicio el servidor público niegue su gestión sin causa
+                            justificada, altere o incumpla con los requisitos y especificaciones detalladas en el Registro de Trámites y/o considera que algo se realizó de forma incorrecta o
+                            inadecuada, puede presentar una Protesta Ciudadana.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="protesta-form-xz9">
+                    <form id="formProtesta" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- MOVER EL SELECT DEL MOTIVO DENTRO DEL FORM -->
+                        <div class="protesta-form-group-xz9">
+                            <label for="selectTipoProtesta" class="protesta-label-xz9">Selecciona un motivo para proceder<span class="protesta-required-xz9">*</span></label>
+                            <select class="protesta-input-xz9 protesta-select-xz9" id="selectTipoProtesta" name="clv_motivo" onchange="validarTipoProtesta()" required>
+                                <option value="">Seleccione una opción</option>
+                                <option value="1">NIEGUE LA GESTION DE SU TRAMITE O SERVICIO SIN CAUSA JUSTIFICADA</option>
+                                <option value="2">EXIJA REQUISITOS O DOCUMENTOS ADICIONALES</option>
+                                <option value="3">EXIJA UN FORMATO ADICIONAL O DIFERENTE AL SEÑALADO EN EL REGISTRO DE TRAMITES Y SERVICIOS</option>
+                                <option value="4">PRETENDA COBRAR CUOTAS ADICIONALES O DISTINTAS A LAS PUBLICADAS</option>
+                                <option value="5">NO RESPETE LA VIGENCIA DEL TRAMITE O SERVICIO</option>
+                                <option value="6">SE REALICEN INSPECCIONES O VERIFICACIONES QUE NO CORRESPONDAN O QUE EXCEDAN LO PERMITIDO O PREVISTO</option>
+                                <option value="7">NO SE RESPETEN LOS CRITERIOS PARA RESOLVER SU SOLICITUD</option>
+                                <option value="8">SE PROPORCIONEN DATOS DE CONTACTO ERRONEOS DEL RESPONSABLE DEL TRAMITE O SERVICIO</option>
+                                <option value="9">OTRO</option>
+                            </select>
+                            <label id="label_Alerttipo_protesta" class="protesta-error-xz9" style="display:none">Se requiere el tipo de protesta</label>
+                        </div>
+                        
+                        <!-- Campos ocultos con datos del trámite -->
+                        {% if tramite %}
+                            <input type="hidden" name="tramite_id" value="{{ tramite.id }}">
+                            <input type="hidden" name="area" value="{{ tramite.clasificacion.nombre }}">
+                            <input type="hidden" name="nombre_tramite" value="{{ tramite.nombre }}">
+                            <input type="hidden" name="objeto_protesta" value="{{ tramite.nombre }}">
+                        {% endif %}
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="area" class="protesta-label-xz9">Área</label>
+                            <textarea class="protesta-input-xz9" readonly>{% if tramite %}{{ tramite.clasificacion.nombre }}{% else %}ÁREA NO ESPECIFICADA{% endif %}</textarea>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="responsable" class="protesta-label-xz9">Responsable<span class="protesta-required-xz9">*</span></label>
+                            <input type="text" class="protesta-input-xz9" name="responsable" id="responsable" 
+                                   placeholder="Nombre del responsable del área" onkeyup="onChangeMayusculas(this)" required>
+                            <label id="label_AlertResponsable" class="protesta-error-xz9" style="display:none">Se requiere el nombre del responsable</label>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="tramite" class="protesta-label-xz9">Nombre trámite</label>
+                            <textarea class="protesta-input-xz9" readonly>{% if tramite %}{{ tramite.nombre }}{% else %}TRÁMITE NO ESPECIFICADO{% endif %}</textarea>
+                        </div>
+
+                        <div class="protesta-section-header-xz9 my-4 text-center">
+                            Datos del Trámite
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label class="protesta-label-xz9">Tipo del trámite o servicio<span class="protesta-required-xz9">*</span></label>
+                            <div class="protesta-radio-group-xz9">
+                                <div class="protesta-radio-item-xz9">
+                                    <input type="radio" name="tipo_tramite" id="ciudadano" value="C" checked>
+                                    <label for="ciudadano">Ciudadano</label>
+                                </div>
+                                <div class="protesta-radio-item-xz9">
+                                    <input type="radio" name="tipo_tramite" id="empresarial" value="E">
+                                    <label for="empresarial">Empresarial</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label class="protesta-label-xz9">Protesta Ciudadana bajo el objeto</label>
+                            <textarea class="protesta-input-xz9" readonly>{% if tramite %}{{ tramite.nombre }}{% else %}OBJETO NO ESPECIFICADO{% endif %}</textarea>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="folio_referencia" class="protesta-label-xz9">Folio, Clave ó Registro<span class="protesta-required-xz9">*</span></label>
+                            <input type="text" class="protesta-input-xz9" name="folio_referencia" id="folio_referencia"
+                                   placeholder="Identificador del procedimiento administrativo" required>
+                            <label id="label_AlertFOLIO_REFERENCIA" class="protesta-error-xz9" style="display:none">Es necesario ingresar un folio, clave ó registro del procedimiento administrativo</label>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label class="protesta-label-xz9">¿El trámite se realizó de manera presencial?<span class="protesta-required-xz9">*</span></label>
+                            <div class="protesta-radio-group-xz9">
+                                <div class="protesta-radio-item-xz9">
+                                    <input type="radio" name="es_presencial" id="presencialSi" value="1" checked onchange="togglePresencial()">
+                                    <label for="presencialSi">Sí</label>
+                                </div>
+                                <div class="protesta-radio-item-xz9">
+                                    <input type="radio" name="es_presencial" id="presencialNo" value="2" onchange="togglePresencial()">
+                                    <label for="presencialNo">No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="protesta-form-group-xz9" id="div_UnidadAdministrativa">
+                            <label for="lugar_administrativa" class="protesta-label-xz9">Lugar de Unidad Administrativa<span class="protesta-required-xz9">*</span></label>
+                            <input class="protesta-input-xz9" type="text" name="lugar_administrativa" id="lugar_administrativa"
+                                   placeholder="Lugar donde se efectuó el trámite" onkeyup="onChangeMayusculas(this)">
+                            <label id="label_Alertlugar_administrativa" class="protesta-error-xz9" style="display:none">Es necesario ingresar el lugar</label>
+                        </div>
+
+                        <div class="protesta-form-group-xz9" id="div_ligaInternet" style="display:none">
+                            <label for="liga_internet" class="protesta-label-xz9">Liga de Internet<span class="protesta-required-xz9">*</span></label>
+                            <input type="url" class="protesta-input-xz9" name="liga_internet" id="liga_internet" 
+                                   placeholder="Introduzca la URL de Internet">
+                            <label id="label_AlertligaInternet" class="protesta-error-xz9" style="display:none">Es necesario ingresar la liga de Internet</label>
+                        </div>
+
+                        <div class="row p-1">
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="fecha_tramite" class="protesta-label-xz9">¿Cuándo se realizó el trámite?<span class="protesta-required-xz9">*</span></label>
+                                    <input type="date" class="protesta-input-xz9" name="fecha_tramite" id="fecha_tramite" required>
+                                    <label id="label_AlertFECHA" class="protesta-error-xz9" style="display:none">La fecha es necesaria</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="hora_tramite" class="protesta-label-xz9">¿Hora que se realizó el trámite?<span class="protesta-required-xz9">*</span></label>
+                                    <input type="time" class="protesta-input-xz9" name="hora_tramite" id="hora_tramite" required>
+                                    <label id="label_AlertHORA" class="protesta-error-xz9" style="display:none">La hora es necesaria</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="rfc" class="protesta-label-xz9">RFC<span class="protesta-required-xz9">*</span></label>
+                            <input type="text" class="protesta-input-xz9" name="rfc" id="rfc" maxlength="14"
+                                   placeholder="Registro Federal del Contribuyente" onkeyup="onChangeMayusculas(this)" required>
+                            <label id="label_AlertRFC" class="protesta-error-xz9" style="display:none">Es necesario ingresar el RFC del solicitante</label>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label class="protesta-label-xz9">¿Qué tanto afecta esta situación a su inversión? 1 es mínimo 10 es máximo<span class="protesta-required-xz9">*</span></label>
+                            <div class="protesta-rating-group-xz9">
+                                {% for i in "12345678910" %}
+                                    <div class="protesta-rating-item-xz9">
+                                        <input type="radio" name="calificacion_afectacion" id="CAL{{ i }}" value="{{ i }}" {% if i == "1" %}checked{% endif %}>
+                                        <label for="CAL{{ i }}" class="protesta-rating-label-xz9">{{ i }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-7">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="costo_afectacion" class="protesta-label-xz9">¿Cuánto le cuesta aproximadamente esta afectación?<span class="protesta-required-xz9">*</span></label>
+                                    <input type="number" class="protesta-input-xz9" name="costo_afectacion" id="costo_afectacion"
+                                           placeholder="MXN" step="0.01" required>
+                                    <label id="label_AlertCOSTO_AFECTACION" class="protesta-error-xz9" style="display:none">Se requiere este campo</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-5">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="costo_letra_afectacion" class="protesta-label-xz9">Importe con letra<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="costo_letra_afectacion" id="costo_letra_afectacion"
+                                           placeholder="Importe" maxlength="480" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertCOSTO_LETRAAFECTACION" class="protesta-error-xz9" style="display:none">Se requiere este campo</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="empleos_afectacion" class="protesta-label-xz9">¿Cuántos empleos resultan afectados por esta situación?<span class="protesta-required-xz9">*</span></label>
+                                    <input type="number" class="protesta-input-xz9" name="empleos_afectacion" id="empleos_afectacion"
+                                           placeholder="Empleos afectados" required>
+                                    <label id="label_AlertEMPLEOS_AFECTACION" class="protesta-error-xz9" style="display:none">Se requiere este campo</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="nombre" class="protesta-label-xz9">Nombre(s) del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="nombre" id="nombre"
+                                           placeholder="Nombre Completo" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertNOMBRE" class="protesta-error-xz9" style="display:none">Se requiere un Nombre</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="apellido_paterno" class="protesta-label-xz9">A. Paterno del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="apellido_paterno" id="apellido_paterno"
+                                           placeholder="Apellido Paterno" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertAPELLIDO_PATERNO" class="protesta-error-xz9" style="display:none">Se requiere el apellido</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="apellido_materno" class="protesta-label-xz9">A. Materno del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="apellido_materno" id="apellido_materno" 
+                                           placeholder="Apellido Materno" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertAPELLIDO_MATERNO" class="protesta-error-xz9" style="display:none">Se requiere el apellido</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-6">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="estado" class="protesta-label-xz9">Estado del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="estado" id="estado" 
+                                           placeholder="Estado del Solicitante" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertESTADO" class="protesta-error-xz9" style="display:none">Estado es campo obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="municipio" class="protesta-label-xz9">Municipio del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="municipio" id="municipio" 
+                                           placeholder="Municipio del Solicitante" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertMUNICIPIO" class="protesta-error-xz9" style="display:none">Municipio es obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="calle" class="protesta-label-xz9">Calle<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="calle" id="calle" 
+                                           placeholder="Calle" onkeyup="onChangeMayusculas(this)" required>
+                                    <label id="label_AlertCALLE" class="protesta-error-xz9" style="display:none">El domicilio es obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="num_ext" class="protesta-label-xz9">No. Exterior<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="num_ext" id="num_ext" 
+                                           placeholder="Número Exterior" onkeyup="onChangeMayusculas(this)" maxlength="9" required>
+                                    <label id="label_AlertNUM_EXT" class="protesta-error-xz9" style="display:none">El domicilio es obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="num_int" class="protesta-label-xz9">No. Interior</label>
+                                    <input type="text" class="protesta-input-xz9" name="num_int" id="num_int" 
+                                           placeholder="Número Interior" onkeyup="onChangeMayusculas(this)" maxlength="9">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="colonia" class="protesta-label-xz9">Colonia<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="colonia" id="colonia" 
+                                           placeholder="Colonia" onkeyup="onChangeMayusculas(this)" maxlength="299" required>
+                                    <label id="label_AlertCOLONIA" class="protesta-error-xz9" style="display:none">La colonia es obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="codigo_postal" class="protesta-label-xz9">Código Postal<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="codigo_postal" id="codigo_postal" 
+                                           placeholder="CP" maxlength="6" required>
+                                    <label id="label_AlertCODIGO_POSTAL" class="protesta-error-xz9" style="display:none">La CP es obligatorio</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-12">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="referencias_domicilio" class="protesta-label-xz9">Referencia del Domicilio</label>
+                                    <input type="text" class="protesta-input-xz9" name="referencias_domicilio" id="referencias_domicilio" 
+                                           placeholder="Referencias" onkeyup="onChangeMayusculas(this)" maxlength="300">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="email" class="protesta-label-xz9">Correo electrónico del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="email" class="protesta-input-xz9" name="email" id="email" placeholder="@" required>
+                                    <label id="label_AlertEMAIL" class="protesta-error-xz9" style="display:none">Ingrese un correo válido</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="telefono" class="protesta-label-xz9">Teléfono del Solicitante<span class="protesta-required-xz9">*</span></label>
+                                    <input type="text" class="protesta-input-xz9" name="telefono" id="telefono"
+                                           placeholder="Ingrese teléfono" maxlength="10" required>
+                                    <label id="label_AlertTELEFONO" class="protesta-error-xz9" style="display:none">Ingrese un teléfono a 10 dígitos</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="protesta-form-group-xz9">
+                                    <label for="movil" class="protesta-label-xz9">Celular del Solicitante</label>
+                                    <input type="text" class="protesta-input-xz9" name="movil" id="movil"
+                                           placeholder="Ingrese celular móvil" maxlength="10">
+                                    <label id="label_AlertMOVIL" class="protesta-error-xz9" style="display:none">Ingrese un número de celular a 10 dígitos</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="descripcion_protesta" class="protesta-label-xz9">Descripción de la Protesta<span class="protesta-required-xz9">*</span></label>
+                            <textarea class="protesta-input-xz9 protesta-textarea-xz9" name="descripcion_protesta" id="descripcion_protesta" rows="5"
+                                      placeholder="Introduzca la descripción de protesta" onkeyup="onChangeMayusculas(this)" required></textarea>
+                            <label id="label_AlertOBJETO_PROTESTA" class="protesta-error-xz9" style="display:none">Se requiere el objeto de protesta</label>
+                        </div>
+
+                        <div class="protesta-form-group-xz9">
+                            <label for="servidor_publico" class="protesta-label-xz9">Nombre del servidor público<span class="protesta-required-xz9">*</span></label>
+                            <input type="text" class="protesta-input-xz9" name="servidor_publico" id="servidor_publico"
+                                   placeholder="Introduzca nombre completo" onkeyup="onChangeMayusculas(this)" required>
+                            <label id="label_AlertSERVIDOR_PUBLICO" class="protesta-error-xz9" style="display:none">Se requiere el nombre del servidor público</label>
+                        </div>
+
+                        <div class="protesta-file-group-xz9">
+                            <label class="protesta-label-xz9">Identificación Oficial (1 archivo, imagen o pdf por ambos lados) menor a los 4MB<span class="protesta-required-xz9">*</span></label>
+                            <div class="protesta-file-wrapper-xz9" id="wrapper_archivo_identificacion">
+                                <input type="file" class="protesta-file-input-xz9" name="archivo_identificacion" id="archivo_identificacion"
+                                       onchange="validarArchivo(this, 'archivo_identificacion');" accept=".pdf,.png,.jpg,.jpeg" required>
+                                <label class="protesta-file-label-xz9" for="archivo_identificacion" id="etiqueta_archivo_identificacion">Seleccionar archivo de identificación</label>
+                                <label id="label_Alert_archivo_identificacion" class="protesta-error-xz9" style="display:none">Ingrese un archivo válido. Debe ser Imagen o PDF, y el tamaño menor a los 4MB</label>
+                            </div>
+                        </div>
+
+                        <div class="protesta-file-group-xz9">
+                            <label class="protesta-label-xz9">Comprobante de Domicilio (1 archivo, imagen o pdf) menor a los 4MB<span class="protesta-required-xz9">*</span></label>
+                            <div class="protesta-file-wrapper-xz9" id="wrapper_archivo_comprobante_dom">
+                                <input type="file" class="protesta-file-input-xz9" name="archivo_comprobante_dom" id="archivo_comprobante_dom"
+                                       onchange="validarArchivo(this, 'archivo_comprobante_dom');" accept=".pdf,.png,.jpg,.jpeg" required>
+                                <label class="protesta-file-label-xz9" for="archivo_comprobante_dom" id="etiqueta_archivo_comprobante_dom">Seleccionar comprobante de domicilio</label>
+                                <label id="label_Alert_archivo_comprobante_dom" class="protesta-error-xz9" style="display:none">Ingrese un archivo válido. Debe ser Imagen o PDF, y el tamaño menor a los 4MB</label>
+                            </div>
+                        </div>
+
+                        <div class="protesta-file-group-xz9">
+                            <label class="protesta-label-xz9">Sube una evidencia, si cuentas con ella (1 archivo, imagen o pdf) menor a los 4MB</label>
+                            <div class="protesta-file-wrapper-xz9" id="wrapper_evidencia">
+                                <input type="file" class="protesta-file-input-xz9" name="evidencia" id="evidencia"
+                                       onchange="validarArchivo(this, 'evidencia');" accept=".pdf,.png,.jpg,.jpeg">
+                                <label class="protesta-file-label-xz9" for="evidencia" id="etiqueta_evidencia">Seleccionar evidencia (opcional)</label>
+                                <label id="label_Alert_evidencia" class="protesta-error-xz9" style="display:none">Ingrese un archivo válido. Debe ser Imagen o PDF, y el tamaño menor a los 4MB</label>
+                            </div>
+                        </div>
+
+                        <div class="row justify-content-center mt-5">
+                            <div class="col-12 col-md-6">
+                                <button type="submit" class="protesta-submit-btn-xz9 w-100" id="btnEnviar">Enviar Protesta</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmación -->
+        <div class="modal fade protesta-modal-xz9" id="modalConfirmacion" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Protesta Ciudadana Enviada</h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="protesta-alert-xz9 protesta-alert-success-xz9">
+                            <h4><i class="fas fa-check-circle"></i> ¡Protesta enviada exitosamente!</h4>
+                            <p><strong>Su folio de seguimiento es:</strong></p>
+                            <div class="protesta-folio-display-xz9" id="folioGenerado"></div>
+                            <p class="mt-3">Guarde este folio para dar seguimiento a su protesta ciudadana.</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="nuevaProtesta()">Nueva Protesta</button>
+                        <button type="button" class="btn btn-secondary" onclick="irAInicio()">Ir al Inicio</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Espera -->
+        <div class="modal fade protesta-modal-xz9" id="modalEspera" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-body text-center">
+                        <img width="80px" src="{% static 'imagenes/loading.gif' %}" alt="Cargando">
+                        <h5 class="modal-title mt-3">Procesando protesta...</h5>
+                        <p>Espere un momento por favor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Función para convertir texto a mayúsculas
+function onChangeMayusculas(input) {
+    input.value = input.value.toUpperCase();
+}
+
+// Función para validar tipo de protesta
+function validarTipoProtesta() {
+    const select = document.getElementById('selectTipoProtesta');
+    const label = document.getElementById('label_Alerttipo_protesta');
+    
+    if (select.value === '') {
+        label.style.display = 'block';
+        return false;
+    } else {
+        label.style.display = 'none';
+        return true;
+    }
+}
+
+// Función para alternar campos presencial/no presencial
+function togglePresencial() {
+    const presencial = document.querySelector('input[name="es_presencial"]:checked').value;
+    const divUnidad = document.getElementById('div_UnidadAdministrativa');
+    const divLiga = document.getElementById('div_ligaInternet');
+    
+    if (presencial === '1') {
+        divUnidad.style.display = 'block';
+        divLiga.style.display = 'none';
+        document.getElementById('liga_internet').required = false;
+        document.getElementById('lugar_administrativa').required = true;
+    } else {
+        divUnidad.style.display = 'none';
+        divLiga.style.display = 'block';
+        document.getElementById('liga_internet').required = true;
+        document.getElementById('lugar_administrativa').required = false;
+    }
+}
+
+// Función para validar archivos
+function validarArchivo(input, fieldName) {
+    const file = input.files[0];
+    const label = document.getElementById(`etiqueta_${fieldName}`);
+    const errorLabel = document.getElementById(`label_Alert_${fieldName}`);
+    const wrapper = document.getElementById(`wrapper_${fieldName}`);
+    
+    if (file) {
+        // Validar tamaño (4MB = 4 * 1024 * 1024 bytes)
+        const maxSize = 4 * 1024 * 1024;
+        if (file.size > maxSize) {
+            errorLabel.textContent = 'El archivo excede el tamaño máximo de 4MB';
+            errorLabel.style.display = 'block';
+            wrapper.classList.remove('has-file');
+            input.value = '';
+            label.textContent = getOriginalLabelText(fieldName);
+            return false;
+        }
+        
+        // Validar tipo de archivo
+        const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+        if (!allowedTypes.includes(file.type)) {
+            errorLabel.textContent = 'Solo se permiten archivos PDF, PNG, JPG o JPEG';
+            errorLabel.style.display = 'block';
+            wrapper.classList.remove('has-file');
+            input.value = '';
+            label.textContent = getOriginalLabelText(fieldName);
+            return false;
+        }
+        
+        // Si es válido
+        errorLabel.style.display = 'none';
+        wrapper.classList.add('has-file');
+        label.textContent = file.name;
+        return true;
+    }
+}
+
+// Función auxiliar para obtener texto original del label
+function getOriginalLabelText(fieldName) {
+    const texts = {
+        'archivo_identificacion': 'Seleccionar archivo de identificación',
+        'archivo_comprobante_dom': 'Seleccionar comprobante de domicilio',
+        'evidencia': 'Seleccionar evidencia (opcional)'
+    };
+    return texts[fieldName] || 'Seleccionar archivo...';
+}
+
+// Función para mostrar modal de espera
+function mostrarEspera() {
+    const modal = document.getElementById('modalEspera');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    
+    // Crear backdrop si no existe
+    if (!document.querySelector('.modal-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+}
+
+// Función para ocultar modal de espera
+function ocultarEspera() {
+    const modal = document.getElementById('modalEspera');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    
+    // Remover backdrop
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+}
+
+// Función para mostrar modal de confirmación
+function mostrarConfirmacion(folio) {
+    document.getElementById('folioGenerado').textContent = folio;
+    const modal = document.getElementById('modalConfirmacion');
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    
+    // Crear backdrop si no existe
+    if (!document.querySelector('.modal-backdrop')) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+}
+
+// Función para nueva protesta
+function nuevaProtesta() {
+    const modal = document.getElementById('modalConfirmacion');
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    
+    // Remover backdrop
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+    
+    document.getElementById('formProtesta').reset();
+    window.scrollTo(0, 0);
+}
+
+// Función para ir al inicio
+function irAInicio() {
+    window.location.href = "/";
+}
+
+// Manejar envío del formulario
+document.getElementById('formProtesta').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Validar tipo de protesta ANTES de mostrar modal
+    if (!validarTipoProtesta()) {
+        // Mostrar error sin modal
+        alert('Error: Debe seleccionar un motivo para proceder');
+        document.getElementById('selectTipoProtesta').scrollIntoView();
+        document.getElementById('selectTipoProtesta').focus();
+        return;
+    }
+    
+    // Deshabilitar botón y mostrar espera
+    const btnEnviar = document.getElementById('btnEnviar');
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando...';
+    mostrarEspera();
+    
+    try {
+        const formData = new FormData(this);
+        
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+        
+        const data = await response.json();
+        
+        ocultarEspera();
+        
+        if (data.success) {
+            mostrarConfirmacion(data.folio);
+        } else {
+            alert('Error: ' + data.error);
+        }
+        
+    } catch (error) {
+        ocultarEspera();
+        alert('Error al enviar la protesta: ' + error.message);
+    }
+    
+    // Rehabilitar botón
+    btnEnviar.disabled = false;
+    btnEnviar.textContent = 'Enviar Protesta';
+});
+
+// Inicializar página
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar estado inicial de campos presencial/no presencial
+    togglePresencial();
+    
+    // Verificar si hay datos del trámite desde el servidor
+    const tramiteId = document.querySelector('input[name="tramite_id"]');
+    if (tramiteId && tramiteId.value) {
+        console.log('Datos del trámite cargados correctamente');
+    }
+});
+
+// Script adicional para obtener datos del servidor de forma segura
+const serverData = {
+    hasTramite: document.querySelector('input[name="tramite_id"]') ? true : false,
+    protestaUrl: window.location.pathname
+};
+</script>
+
+{% endblock %}

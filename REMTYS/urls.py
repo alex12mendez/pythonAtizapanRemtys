@@ -1,3 +1,5 @@
+# Actualizar tu urls.py - La URL ya está creada, solo asegúrate que esté así:
+
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
@@ -10,11 +12,10 @@ from tramites.views import (
     get_tramite_detail_api, update_tramite_detail_api, update_modalidad_api,
     update_requisito_api, update_costo_api, update_opcion_pago_api,
     update_fundamento_juridico_api, update_informacion_adicional_api,
-    update_oficina_atencion_api,
+    update_oficina_atencion_api, protesta_view,
     # NUEVA IMPORTACIÓN PARA BÚSQUEDA:
     buscar_api
 )
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,7 +39,7 @@ urlpatterns = [
     path('api/tramites/update/', update_tramite_api, name='update_tramite_api'),
     path('api/tramites/delete/', delete_tramite_api, name='delete_tramite_api'),
     
-    # NUEVAS APIs PARA DETALLE DE TRÁMITES:
+    # APIs PARA DETALLE DE TRÁMITES:
     path('api/tramite/<int:tramite_id>/detail/', get_tramite_detail_api, name='get_tramite_detail_api'),
     path('api/tramite/detail/update/', update_tramite_detail_api, name='update_tramite_detail_api'),
     path('api/modalidad/update/', update_modalidad_api, name='update_modalidad_api'),
@@ -48,6 +49,9 @@ urlpatterns = [
     path('api/fundamento-juridico/update/', update_fundamento_juridico_api, name='update_fundamento_juridico_api'),
     path('api/informacion-adicional/update/', update_informacion_adicional_api, name='update_informacion_adicional_api'),
     path('api/oficina-atencion/update/', update_oficina_atencion_api, name='update_oficina_atencion_api'),
+
+    # URL PARA PROTESTA CIUDADANA
+    path('protesta/', protesta_view, name='protesta'),
 ]
 
 # Servir archivos media y static en desarrollo
