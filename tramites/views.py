@@ -1,12 +1,32 @@
+# Agregar estos imports al inicio de tu views.py (en la sección de imports existentes)
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.db import models  # ← AGREGAR ESTA LÍNEA
+from django.core.paginator import Paginator  # ← AGREGAR ESTA LÍNEA
+from django.template.loader import get_template  # ← AGREGAR ESTA LÍNEA
 import json
+import unicodedata
+import re
+from io import BytesIO  # ← AGREGAR ESTA LÍNEA
+import os  # ← AGREGAR ESTA LÍNEA
+
+# Imports para PDF
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
 from .models import ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario
 from .models import (
     ClasificacionTramites, Tramite, DetalleTramite, PerfilUsuario,
@@ -1232,3 +1252,664 @@ def protesta_view(request):
     }
     
     return render(request, 'protesta.html', context)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_protestas_api(request):
+    """API para obtener todas las protestas (solo superuser)"""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        # Obtener parámetros de búsqueda y filtros
+        page = int(request.GET.get('page', 1))
+        search = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', '').strip()
+        per_page = 10
+        
+        # Construir queryset base ordenado por más recientes
+        protestas = ProtestaCiudadana.objects.select_related('tramite').order_by('-fecha_creacion')
+        
+        # Aplicar filtros
+        if search:
+            protestas = protestas.filter(
+                models.Q(folio__icontains=search) |
+                models.Q(nombre__icontains=search) |
+                models.Q(apellido_paterno__icontains=search) |
+                models.Q(apellido_materno__icontains=search) |
+                models.Q(rfc__icontains=search)
+            )
+        
+        if status_filter:
+            protestas = protestas.filter(estatus=status_filter)
+        
+        # Paginación
+        paginator = Paginator(protestas, per_page)
+        page_obj = paginator.get_page(page)
+        
+        # Preparar datos
+        protestas_data = []
+        for protesta in page_obj:
+            protestas_data.append({
+                'id': protesta.id,
+                'folio': protesta.folio,
+                'nombre_completo': protesta.get_nombre_completo(),
+                'tramite_nombre': protesta.nombre_tramite,
+                'area': protesta.area,
+                'estatus': protesta.estatus,
+                'estatus_display': protesta.get_estatus_display(),
+                'fecha_creacion': protesta.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
+                'motivo_display': protesta.get_motivo_display_text(),
+                'email': protesta.email,
+                'telefono': protesta.telefono,
+                'servidor_publico': protesta.servidor_publico,
+            })
+        
+        return JsonResponse({
+            'protestas': protestas_data,
+            'pagination': {
+                'current_page': page_obj.number,
+                'total_pages': paginator.num_pages,
+                'total_count': paginator.count,
+                'has_previous': page_obj.has_previous(),
+                'has_next': page_obj.has_next(),
+                'previous_page': page_obj.previous_page_number() if page_obj.has_previous() else None,
+                'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+            },
+            'status_choices': [
+                {'value': choice[0], 'label': choice[1]} 
+                for choice in ProtestaCiudadana.ESTATUS_CHOICES
+            ]
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_protesta_status_api(request):
+    """API para actualizar el estatus de una protesta (solo superuser)"""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        protesta_id = data.get('protesta_id')
+        nuevo_estatus = data.get('estatus')
+        
+        if not protesta_id or not nuevo_estatus:
+            return JsonResponse({'error': 'ID de protesta y estatus requeridos'}, status=400)
+        
+        # Validar que el estatus sea válido
+        estatus_validos = [choice[0] for choice in ProtestaCiudadana.ESTATUS_CHOICES]
+        if nuevo_estatus not in estatus_validos:
+            return JsonResponse({'error': 'Estatus inválido'}, status=400)
+        
+        protesta = get_object_or_404(ProtestaCiudadana, id=protesta_id)
+        estatus_anterior = protesta.estatus
+        protesta.estatus = nuevo_estatus
+        protesta.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Estatus cambiado de "{protesta.get_estatus_display()}" a "{dict(ProtestaCiudadana.ESTATUS_CHOICES)[nuevo_estatus]}"',
+            'protesta': {
+                'id': protesta.id,
+                'folio': protesta.folio,
+                'estatus': protesta.estatus,
+                'estatus_display': protesta.get_estatus_display()
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# Reemplaza la función generar_protesta_pdf completa con esta versión corregida:
+
+@require_http_methods(["GET"])
+def generar_protesta_pdf(request, protesta_id):
+    """Generar PDF completo de una protesta (solo superuser)"""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        protesta = get_object_or_404(ProtestaCiudadana, id=protesta_id)
+        
+        # Crear respuesta HTTP para PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Protesta_{protesta.folio}.pdf"'
+        
+        # Crear el PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
+        
+        # Estilos
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            spaceAfter=30,
+            alignment=1,  # Centrado
+            textColor=colors.darkblue
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=12,
+            spaceAfter=12,
+            textColor=colors.darkblue,
+            borderColor=colors.darkblue,
+            borderWidth=1,
+            borderPadding=5,
+            backColor=colors.lightgrey
+        )
+        
+        # Estilo para texto en celdas
+        cell_style = ParagraphStyle(
+            'CellStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            spaceAfter=0,
+            leftIndent=0,
+            wordWrap='CJK'
+        )
+        
+        # Función auxiliar para crear texto que se ajuste a la celda
+        def create_cell_paragraph(text, style=cell_style):
+            return Paragraph(str(text), style)
+        
+        # Contenido del PDF
+        content = []
+        
+        # Título
+        content.append(Paragraph("PROTESTA CIUDADANA", title_style))
+        content.append(Paragraph(f"Folio: {protesta.folio}", styles['Heading2']))
+        content.append(Spacer(1, 20))
+        
+        # Información de Control
+        content.append(Paragraph("INFORMACIÓN DE CONTROL", heading_style))
+        info_control = [
+            [create_cell_paragraph('Folio:'), create_cell_paragraph(protesta.folio)],
+            [create_cell_paragraph('Fecha de Creación:'), create_cell_paragraph(protesta.fecha_creacion.strftime('%d/%m/%Y %H:%M:%S'))],
+            [create_cell_paragraph('Estatus:'), create_cell_paragraph(protesta.get_estatus_display())],
+        ]
+        
+        table = Table(info_control, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Datos del Trámite
+        content.append(Paragraph("DATOS DEL TRÁMITE", heading_style))
+        datos_tramite = [
+            [create_cell_paragraph('Área:'), create_cell_paragraph(protesta.area)],
+            [create_cell_paragraph('Responsable:'), create_cell_paragraph(protesta.responsable)],
+            [create_cell_paragraph('Nombre del Trámite:'), create_cell_paragraph(protesta.nombre_tramite)],
+            [create_cell_paragraph('Objeto de Protesta:'), create_cell_paragraph(protesta.objeto_protesta)],
+        ]
+        
+        table = Table(datos_tramite, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Motivo y Procedimiento
+        content.append(Paragraph("MOTIVO Y PROCEDIMIENTO", heading_style))
+        motivo_proc = [
+            [create_cell_paragraph('Motivo:'), create_cell_paragraph(protesta.get_motivo_display_text())],
+            [create_cell_paragraph('Tipo de Trámite:'), create_cell_paragraph(protesta.get_tipo_tramite_display())],
+            [create_cell_paragraph('Folio de Referencia:'), create_cell_paragraph(protesta.folio_referencia)],
+            [create_cell_paragraph('¿Es Presencial?:'), create_cell_paragraph('Sí' if protesta.es_presencial == 1 else 'No')],
+            [create_cell_paragraph('Lugar/Liga:'), create_cell_paragraph(protesta.lugar_administrativa if protesta.es_presencial == 1 else protesta.liga_internet)],
+            [create_cell_paragraph('Fecha del Trámite:'), create_cell_paragraph(protesta.fecha_tramite.strftime('%d/%m/%Y'))],
+            [create_cell_paragraph('Hora del Trámite:'), create_cell_paragraph(protesta.hora_tramite.strftime('%H:%M'))],
+        ]
+        
+        table = Table(motivo_proc, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Información Económica
+        content.append(Paragraph("INFORMACIÓN ECONÓMICA", heading_style))
+        info_economica = [
+            [create_cell_paragraph('RFC:'), create_cell_paragraph(protesta.rfc)],
+            [create_cell_paragraph('Calificación de Afectación:'), create_cell_paragraph(f'{protesta.calificacion_afectacion}/10')],
+            [create_cell_paragraph('Costo de Afectación:'), create_cell_paragraph(f'${protesta.costo_afectacion:,.2f} MXN')],
+            [create_cell_paragraph('Costo con Letra:'), create_cell_paragraph(protesta.costo_letra_afectacion)],
+            [create_cell_paragraph('Empleos Afectados:'), create_cell_paragraph(str(protesta.empleos_afectacion))],
+        ]
+        
+        table = Table(info_economica, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Datos Personales
+        content.append(Paragraph("DATOS PERSONALES DEL SOLICITANTE", heading_style))
+        direccion_completa = f'{protesta.calle} #{protesta.num_ext}' + (f' Int. {protesta.num_int}' if protesta.num_int else '')
+        datos_personales = [
+            [create_cell_paragraph('Nombre Completo:'), create_cell_paragraph(protesta.get_nombre_completo())],
+            [create_cell_paragraph('Estado:'), create_cell_paragraph(protesta.estado)],
+            [create_cell_paragraph('Municipio:'), create_cell_paragraph(protesta.municipio)],
+            [create_cell_paragraph('Dirección:'), create_cell_paragraph(direccion_completa)],
+            [create_cell_paragraph('Colonia:'), create_cell_paragraph(protesta.colonia)],
+            [create_cell_paragraph('Código Postal:'), create_cell_paragraph(protesta.codigo_postal)],
+            [create_cell_paragraph('Referencias:'), create_cell_paragraph(protesta.referencias_domicilio or 'N/A')],
+        ]
+        
+        table = Table(datos_personales, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Datos de Contacto
+        content.append(Paragraph("DATOS DE CONTACTO", heading_style))
+        contacto = [
+            [create_cell_paragraph('Email:'), create_cell_paragraph(protesta.email)],
+            [create_cell_paragraph('Teléfono:'), create_cell_paragraph(protesta.telefono)],
+            [create_cell_paragraph('Móvil:'), create_cell_paragraph(protesta.movil or 'N/A')],
+        ]
+        
+        table = Table(contacto, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Descripción de la Protesta
+        content.append(Paragraph("DESCRIPCIÓN DE LA PROTESTA", heading_style))
+        
+        descripcion_data = [
+            [create_cell_paragraph('Servidor Público:'), create_cell_paragraph(protesta.servidor_publico)],
+            [create_cell_paragraph('Descripción:'), create_cell_paragraph(protesta.descripcion_protesta)],
+        ]
+        
+        table = Table(descripcion_data, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        content.append(Spacer(1, 20))
+        
+        # Archivos Adjuntos
+        content.append(Paragraph("ARCHIVOS ADJUNTOS", heading_style))
+        archivos = [
+            [create_cell_paragraph('Identificación:'), create_cell_paragraph('Sí' if protesta.archivo_identificacion else 'No')],
+            [create_cell_paragraph('Comprobante Domicilio:'), create_cell_paragraph('Sí' if protesta.archivo_comprobante_dom else 'No')],
+            [create_cell_paragraph('Evidencia:'), create_cell_paragraph('Sí' if protesta.evidencia else 'No')],
+        ]
+        
+        table = Table(archivos, colWidths=[1.5*inch, 4.5*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND', (0, 0), (0, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        content.append(table)
+        
+        # Construir el PDF
+        doc.build(content)
+        
+        # Obtener el PDF del buffer
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Error al generar PDF: {str(e)}'}, status=500)
+    
+    
+# Agregar estas funciones al final de tu views.py existente
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_grupos_api(request):
+    """API para obtener todos los grupos y sus usuarios (solo superadmin)"""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        # Obtener todos los usuarios con sus perfiles
+        usuarios = User.objects.select_related('perfilusuario').all()
+        
+        # Organizar usuarios por grupo
+        grupos = {
+            'SUPER_ADMIN': [],
+            'ADMINISTRADOR': [],
+            'GESTOR_PROTESTAS': [],
+            'GESTOR_TRAMITES': []
+        }
+        
+        for user in usuarios:
+            try:
+                perfil = user.perfilusuario
+                grupo = perfil.grupo_usuario
+                
+                # Asegurar que superusers estén en SUPER_ADMIN
+                if user.is_superuser:
+                    grupo = 'SUPER_ADMIN'
+                    if perfil.grupo_usuario != 'SUPER_ADMIN':
+                        perfil.grupo_usuario = 'SUPER_ADMIN'
+                        perfil.save()
+                
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'nombre_completo': f'{user.first_name} {user.last_name}'.strip() or user.username,
+                    'email': user.email,
+                    'area': perfil.clasificacion.nombre if perfil.clasificacion else 'Sin área asignada',
+                    'is_active': user.is_active,
+                    'fecha_registro': user.date_joined.strftime('%d/%m/%Y')
+                }
+                
+                # Agregar al grupo correspondiente
+                if grupo in grupos:
+                    grupos[grupo].append(user_data)
+                else:
+                    # Si no tiene grupo válido, asignar a GESTOR_TRAMITES por defecto
+                    grupos['GESTOR_TRAMITES'].append(user_data)
+                    perfil.grupo_usuario = 'GESTOR_TRAMITES'
+                    perfil.save()
+                    
+            except PerfilUsuario.DoesNotExist:
+                # Si no tiene perfil, crear uno
+                grupo = 'SUPER_ADMIN' if user.is_superuser else 'GESTOR_TRAMITES'
+                PerfilUsuario.objects.create(user=user, grupo_usuario=grupo)
+                
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'nombre_completo': f'{user.first_name} {user.last_name}'.strip() or user.username,
+                    'email': user.email,
+                    'area': 'Sin área asignada',
+                    'is_active': user.is_active,
+                    'fecha_registro': user.date_joined.strftime('%d/%m/%Y')
+                }
+                grupos[grupo].append(user_data)
+        
+        return JsonResponse({
+            'grupos': grupos,
+            'totales': {
+                'SUPER_ADMIN': len(grupos['SUPER_ADMIN']),
+                'ADMINISTRADOR': len(grupos['ADMINISTRADOR']),
+                'GESTOR_PROTESTAS': len(grupos['GESTOR_PROTESTAS']),
+                'GESTOR_TRAMITES': len(grupos['GESTOR_TRAMITES'])
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def cambiar_grupo_usuario_api(request):
+    """API para cambiar el grupo de un usuario (solo superadmin)"""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        nuevo_grupo = data.get('nuevo_grupo')
+        
+        if not user_id or not nuevo_grupo:
+            return JsonResponse({'error': 'ID de usuario y nuevo grupo requeridos'}, status=400)
+        
+        # Validar que el grupo sea válido
+        grupos_validos = ['SUPER_ADMIN', 'ADMINISTRADOR', 'GESTOR_PROTESTAS', 'GESTOR_TRAMITES']
+        if nuevo_grupo not in grupos_validos:
+            return JsonResponse({'error': 'Grupo inválido'}, status=400)
+        
+        user = get_object_or_404(User, id=user_id)
+        
+        # No permitir cambiar el grupo del propio superuser que está logueado
+        if user.id == request.user.id:
+            return JsonResponse({'error': 'No puedes cambiar tu propio grupo'}, status=400)
+        
+        # Obtener o crear perfil
+        try:
+            perfil = user.perfilusuario
+        except PerfilUsuario.DoesNotExist:
+            perfil = PerfilUsuario.objects.create(user=user)
+        
+        grupo_anterior = perfil.grupo_usuario
+        
+        # Validaciones especiales
+        if nuevo_grupo == 'SUPER_ADMIN' and not user.is_superuser:
+            return JsonResponse({'error': 'Solo usuarios superuser pueden estar en el grupo SUPER_ADMIN'}, status=400)
+        
+        # Actualizar el grupo
+        perfil.grupo_usuario = nuevo_grupo
+        perfil.save()
+        
+        # Mapeo de nombres de grupos para el mensaje
+        grupos_display = {
+            'SUPER_ADMIN': 'Super Administrador',
+            'ADMINISTRADOR': 'Administrador',
+            'GESTOR_PROTESTAS': 'Gestor de Protestas',
+            'GESTOR_TRAMITES': 'Gestor de Trámites'
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuario {user.username} movido de "{grupos_display.get(grupo_anterior, grupo_anterior)}" a "{grupos_display.get(nuevo_grupo, nuevo_grupo)}"',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'grupo_anterior': grupo_anterior,
+                'grupo_nuevo': nuevo_grupo
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# También necesitas actualizar la función get_users_api existente para incluir el grupo
+# Reemplaza la función get_users_api con esta versión actualizada:
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_users_api(request):
+    """API para obtener todos los usuarios (solo superadmin) - VERSIÓN ACTUALIZADA"""
+    if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        users_data = []
+        users = User.objects.all().order_by('username')
+        clasificaciones = ClasificacionTramites.objects.all()
+        
+        for user in users:
+            try:
+                perfil = PerfilUsuario.objects.get(user=user)
+                clasificacion_id = perfil.clasificacion.id if perfil.clasificacion else None
+                clasificacion_nombre = perfil.clasificacion.nombre if perfil.clasificacion else 'Sin área asignada'
+                grupo_usuario = perfil.grupo_usuario
+            except PerfilUsuario.DoesNotExist:
+                clasificacion_id = None
+                clasificacion_nombre = 'Sin perfil'
+                grupo_usuario = 'GESTOR_TRAMITES'
+            
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'is_active': user.is_active,
+                'is_staff': user.is_staff,
+                'clasificacion_id': clasificacion_id,
+                'clasificacion_nombre': clasificacion_nombre,
+                'grupo_usuario': grupo_usuario,
+                'date_joined': user.date_joined.strftime('%d/%m/%Y')
+            })
+        
+        clasificaciones_data = [{'id': c.id, 'nombre': c.nombre} for c in clasificaciones]
+        
+        return JsonResponse({
+            'users': users_data,
+            'clasificaciones': clasificaciones_data
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# También actualiza la función create_user_api para asignar grupo automáticamente:
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_user_api(request):
+    """API para crear un nuevo usuario (solo superadmin) - VERSIÓN ACTUALIZADA"""
+    if not request.user.is_authenticated or not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'error': 'No tienes permisos para esta acción'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Validar datos requeridos
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        email = data.get('email', '').strip()
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        
+        if not username or not password:
+            return JsonResponse({'error': 'Usuario y contraseña son obligatorios'}, status=400)
+        
+        # Verificar si el usuario ya existe
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'El nombre de usuario ya existe'}, status=400)
+        
+        # Crear usuario
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=data.get('is_staff', False)
+        )
+        
+        # Obtener o crear perfil
+        try:
+            perfil = PerfilUsuario.objects.get(user=user)
+        except PerfilUsuario.DoesNotExist:
+            # Determinar grupo automáticamente
+            grupo = 'SUPER_ADMIN' if user.is_superuser else 'GESTOR_TRAMITES'
+            perfil = PerfilUsuario.objects.create(user=user, grupo_usuario=grupo)
+        
+        # Asignar clasificación si se proporciona
+        clasificacion_id = data.get('clasificacion_id')
+        if clasificacion_id:
+            try:
+                clasificacion = ClasificacionTramites.objects.get(id=clasificacion_id)
+                perfil.clasificacion = clasificacion
+                perfil.save()
+            except ClasificacionTramites.DoesNotExist:
+                pass
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Usuario creado exitosamente',
+            'user_id': user.id
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

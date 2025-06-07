@@ -1,4 +1,4 @@
-# Actualizar tu urls.py - La URL ya está creada, solo asegúrate que esté así:
+# Agregar estas nuevas URLs a tu urls.py existente
 
 from django.contrib import admin
 from django.urls import path
@@ -14,7 +14,10 @@ from tramites.views import (
     update_fundamento_juridico_api, update_informacion_adicional_api,
     update_oficina_atencion_api, protesta_view,
     # NUEVA IMPORTACIÓN PARA BÚSQUEDA:
-    buscar_api
+    buscar_api,
+    # NUEVAS IMPORTACIONES PARA PROTESTAS:
+    get_protestas_api, update_protesta_status_api, generar_protesta_pdf,
+    get_grupos_api, cambiar_grupo_usuario_api,
 )
 
 urlpatterns = [
@@ -52,6 +55,16 @@ urlpatterns = [
 
     # URL PARA PROTESTA CIUDADANA
     path('protesta/', protesta_view, name='protesta'),
+    
+    # NUEVAS APIs PARA PANEL DE PROTESTAS:
+    path('api/protestas/', get_protestas_api, name='get_protestas_api'),
+    path('api/protesta/status/update/', update_protesta_status_api, name='update_protesta_status_api'),
+    path('api/protesta/<int:protesta_id>/pdf/', generar_protesta_pdf, name='generar_protesta_pdf'),
+    
+    # NUEVAS APIs PARA GRUPOS DE USUARIOS:
+    
+    path('api/grupos/', get_grupos_api, name='get_grupos_api'),
+    path('api/cambiar-grupo/', cambiar_grupo_usuario_api, name='cambiar_grupo_usuario_api'),
 ]
 
 # Servir archivos media y static en desarrollo

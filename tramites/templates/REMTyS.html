@@ -156,6 +156,206 @@
 <div class="admin-separator"></div>
 {% endif %}
 
+<!-- Panel de Protestas Ciudadanas (solo para superadmin) -->
+{% if user.is_authenticated and user.is_superuser %}
+<div class="protestas-panel">
+    <div class="protestas-header">
+        <h2><i class="fas fa-file-signature"></i> Panel de Protestas Ciudadanas</h2>
+        <div class="protestas-controls">
+            <input type="text" id="searchProtestas" placeholder="Buscar por folio, nombre o RFC..." class="search-protestas">
+            <select id="statusFilter" class="status-filter">
+                <option value="">Todos los estatus</option>
+            </select>
+            <button class="btn-refresh" onclick="loadProtestas()">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+    </div>
+    
+    <div class="protestas-content">
+        <div class="protestas-table-container">
+            <table class="protestas-table" id="protestasTable">
+                <thead>
+                    <tr>
+                        <th>Folio</th>
+                        <th>Solicitante</th>
+                        <th>Trámite</th>
+                        <th>Área</th>
+                        <th>Estatus</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="protestasTableBody">
+                    <!-- Los datos se cargan dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        <div class="protestas-pagination" id="protestasPagination">
+            <!-- Se carga dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cambiar estatus -->
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cambiar Estatus de Protesta</h3>
+            <span class="close" onclick="closeStatusModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p><strong>Folio:</strong> <span id="statusModalFolio"></span></p>
+            <p><strong>Solicitante:</strong> <span id="statusModalSolicitante"></span></p>
+            <p><strong>Estatus actual:</strong> <span id="statusModalCurrentStatus"></span></p>
+            
+            <div class="form-group">
+                <label for="newStatus">Nuevo estatus:</label>
+                <select id="newStatus" class="form-control">
+                    <!-- Se llenan dinámicamente -->
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeStatusModal()">Cancelar</button>
+            <button type="button" class="btn-save" id="saveStatusBtn">Cambiar Estatus</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para detalles de protesta -->
+<div id="detailModal" class="modal">
+    <div class="modal-content detail-modal-content">
+        <div class="modal-header">
+            <h3>Detalles de Protesta</h3>
+            <span class="close" onclick="closeDetailModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="detailModalBody">
+            <!-- Se llena dinámicamente -->
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeDetailModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div class="admin-separator"></div>
+
+<!-- Panel de Grupos de Usuarios (solo para superadmin) -->
+<div class="grupos-panel">
+    <div class="grupos-header">
+        <h2><i class="fas fa-users-cog"></i> Panel de Grupos de Usuarios</h2>
+        <button class="btn-refresh-grupos" onclick="loadGrupos()">
+            <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
+    </div>
+    
+    <div class="grupos-content">
+        <div class="grupos-grid">
+            
+            <!-- Grupo Super Admin -->
+            <div class="grupo-card super-admin">
+                <div class="grupo-header">
+                    <div class="grupo-icon">👑</div>
+                    <h3>SUPER ADMIN</h3>
+                    <span class="grupo-count" id="count-SUPER_ADMIN">0</span>
+                </div>
+                <div class="grupo-permisos">
+                    <span class="permiso-badge">✅ Acceso Completo</span>
+                </div>
+                <div class="grupo-usuarios" id="usuarios-SUPER_ADMIN">
+                    <!-- Se llenan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Grupo Administrador -->
+            <div class="grupo-card administrador">
+                <div class="grupo-header">
+                    <div class="grupo-icon">🛡️</div>
+                    <h3>ADMINISTRADOR</h3>
+                    <span class="grupo-count" id="count-ADMINISTRADOR">0</span>
+                </div>
+                <div class="grupo-permisos">
+                    <span class="permiso-badge">✅ Usuarios</span>
+                    <span class="permiso-badge">✅ Trámites</span>
+                    <span class="permiso-badge no">❌ Protestas</span>
+                </div>
+                <div class="grupo-usuarios" id="usuarios-ADMINISTRADOR">
+                    <!-- Se llenan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Grupo Gestor de Protestas -->
+            <div class="grupo-card gestor-protestas">
+                <div class="grupo-header">
+                    <div class="grupo-icon">📋</div>
+                    <h3>GESTOR PROTESTAS</h3>
+                    <span class="grupo-count" id="count-GESTOR_PROTESTAS">0</span>
+                </div>
+                <div class="grupo-permisos">
+                    <span class="permiso-badge">✅ Solo Protestas</span>
+                    <span class="permiso-badge no">❌ Usuarios</span>
+                    <span class="permiso-badge no">❌ Trámites</span>
+                </div>
+                <div class="grupo-usuarios" id="usuarios-GESTOR_PROTESTAS">
+                    <!-- Se llenan dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Grupo Gestor de Trámites -->
+            <div class="grupo-card gestor-tramites">
+                <div class="grupo-header">
+                    <div class="grupo-icon">📁</div>
+                    <h3>GESTOR TRÁMITES</h3>
+                    <span class="grupo-count" id="count-GESTOR_TRAMITES">0</span>
+                </div>
+                <div class="grupo-permisos">
+                    <span class="permiso-badge">✅ Trámites de su Área</span>
+                    <span class="permiso-badge no">❌ Usuarios</span>
+                    <span class="permiso-badge no">❌ Protestas</span>
+                </div>
+                <div class="grupo-usuarios" id="usuarios-GESTOR_TRAMITES">
+                    <!-- Se llenan dinámicamente -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cambiar grupo de usuario -->
+<div id="cambiarGrupoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cambiar Grupo de Usuario</h3>
+            <span class="close" onclick="closeCambiarGrupoModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p><strong>Usuario:</strong> <span id="modalUsuarioNombre"></span></p>
+            <p><strong>Grupo actual:</strong> <span id="modalGrupoActual"></span></p>
+            
+            <div class="form-group">
+                <label for="nuevoGrupo">Nuevo grupo:</label>
+                <select id="nuevoGrupo" class="form-control">
+                    <option value="ADMINISTRADOR">🛡️ Administrador</option>
+                    <option value="GESTOR_PROTESTAS">📋 Gestor de Protestas</option>
+                    <option value="GESTOR_TRAMITES">📁 Gestor de Trámites</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closeCambiarGrupoModal()">Cancelar</button>
+            <button type="button" class="btn-save" id="saveGrupoBtn">Cambiar Grupo</button>
+        </div>
+    </div>
+</div>
+
+<div class="admin-separator"></div>
+
+{% endif %}
+
 <!-- Contenedor de resultados de búsqueda -->
 <div class="search-results-container" id="searchResults" style="display: none;">
     <div class="search-info">
@@ -304,6 +504,565 @@
     padding: 2rem;
     color: #007bff;
 }
+
+/* Estilos para el panel de protestas */
+.protestas-panel {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.protestas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.protestas-header h2 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.protestas-header i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+.protestas-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-protestas, .status-filter {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.search-protestas {
+    width: 250px;
+}
+
+.status-filter {
+    width: 150px;
+}
+
+.btn-refresh {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.btn-refresh:hover {
+    background: #218838;
+}
+
+.protestas-table-container {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.protestas-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.protestas-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.protestas-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.85rem;
+}
+
+.protestas-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.protesta-folio {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.protesta-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.protesta-status.RECIBIDA {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.protesta-status.EN_PROCESO {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.protesta-status.APROBADA {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.protesta-status.NEGADA {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.protesta-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s;
+}
+
+.btn-action.pdf {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-action.pdf:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-action.status {
+    background: #007bff;
+    color: white;
+}
+
+.btn-action.status:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn-action.detail {
+    background: #28a745;
+    color: white;
+}
+
+.btn-action.detail:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.protestas-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.pagination-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.pagination-btn:hover {
+    background: #f8f9fa;
+}
+
+.pagination-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.detail-modal-content {
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.detail-section {
+    margin-bottom: 1.5rem;
+}
+
+.detail-section h4 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.detail-value {
+    color: #333;
+}
+
+.loading-protestas {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.no-protestas {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.no-protestas i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #ddd;
+}
+
+/* Estilos para el panel de grupos */
+.grupos-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.grupos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #e9ecef;
+}
+
+.grupos-header h2 {
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.grupos-header i {
+    margin-right: 12px;
+    color: #3498db;
+}
+
+.btn-refresh-grupos {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-refresh-grupos:hover {
+    background: linear-gradient(135deg, #218838, #1ea788);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.grupos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.grupo-card {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.grupo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--card-color), var(--card-color-light));
+}
+
+.grupo-card.super-admin {
+    --card-color: #e74c3c;
+    --card-color-light: #f39c12;
+    border-color: #e74c3c;
+}
+
+.grupo-card.administrador {
+    --card-color: #3498db;
+    --card-color-light: #2980b9;
+    border-color: #3498db;
+}
+
+.grupo-card.gestor-protestas {
+    --card-color: #9b59b6;
+    --card-color-light: #8e44ad;
+    border-color: #9b59b6;
+}
+
+.grupo-card.gestor-tramites {
+    --card-color: #27ae60;
+    --card-color-light: #2ecc71;
+    border-color: #27ae60;
+}
+
+.grupo-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.grupo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.grupo-icon {
+    font-size: 2rem;
+    margin-right: 10px;
+}
+
+.grupo-header h3 {
+    flex: 1;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.grupo-count {
+    background: var(--card-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+}
+
+.grupo-permisos {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.permiso-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-weight: 500;
+    background: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.permiso-badge.no {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.grupo-usuarios {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.grupo-usuarios::-webkit-scrollbar {
+    width: 6px;
+}
+
+.grupo-usuarios::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.grupo-usuarios::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.usuario-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.usuario-item:hover {
+    background: #f8f9fa;
+    border-color: var(--card-color);
+    transform: translateX(5px);
+}
+
+.usuario-item:last-child {
+    margin-bottom: 0;
+}
+
+.usuario-nombre {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+}
+
+.usuario-detalles {
+    font-size: 0.85rem;
+    color: #6c757d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.usuario-area {
+    color: #495057;
+}
+
+.btn-cambiar-grupo {
+    background: var(--card-color);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cambiar-grupo:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.loading-grupos {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+}
+
+.no-usuarios {
+    text-align: center;
+    padding: 1rem;
+    color: #999;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .grupos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .grupo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .grupo-count {
+        align-self: flex-end;
+    }
+    
+    .grupos-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .protestas-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .protestas-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-protestas, .status-filter {
+        width: 100%;
+    }
+    
+    .protestas-table th,
+    .protestas-table td {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .protesta-actions {
+        flex-direction: column;
+    }
+}
 </style>
 
 <script>
@@ -313,11 +1072,32 @@ let allClasificaciones = [];
 let searchTimeout = null;
 let isSearching = false;
 
+// Variables globales para protestas
+let currentProtestasPage = 1;
+let protestasData = [];
+let allStatusChoices = [];
+let currentEditProtestaId = null;
+
+// Variables globales para grupos
+let gruposData = {};
+let currentEditUserGrupoId = null;
+
 // Cargar datos al inicio
 document.addEventListener('DOMContentLoaded', function() {
     // Solo cargar usuarios si es superadmin
     if (document.getElementById('usersTable')) {
         loadUsers();
+    }
+    
+    // Solo cargar protestas si es superadmin
+    if (document.getElementById('protestasTable')) {
+        loadProtestas();
+        setupProtestasSearch();
+    }
+    
+    // Solo cargar grupos si es superadmin
+    if (document.getElementById('count-SUPER_ADMIN')) {
+        loadGrupos();
     }
     
     // Configurar búsqueda
@@ -544,7 +1324,7 @@ function displaySearchResults(data, query) {
     document.getElementById('searchResultsContent').innerHTML = html;
 }
 
-// === RESTO DEL CÓDIGO EXISTENTE PARA USUARIOS ===
+// === FUNCIONES PARA USUARIOS ===
 
 // Función para cargar usuarios
 async function loadUsers() {
@@ -772,6 +1552,554 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
     }
 });
 
+// === FUNCIONES PARA PROTESTAS ===
+
+// Configurar búsqueda de protestas
+function setupProtestasSearch() {
+    const searchInput = document.getElementById('searchProtestas');
+    const statusFilter = document.getElementById('statusFilter');
+    let searchTimeout;
+    
+    // Búsqueda en tiempo real
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentProtestasPage = 1;
+            loadProtestas();
+        }, 500);
+    });
+    
+    // Filtro por estatus
+    statusFilter.addEventListener('change', function() {
+        currentProtestasPage = 1;
+        loadProtestas();
+    });
+}
+
+// Cargar lista de protestas
+async function loadProtestas() {
+    try {
+        showProtestasLoading();
+        
+        const searchTerm = document.getElementById('searchProtestas').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        const params = new URLSearchParams({
+            page: currentProtestasPage,
+            search: searchTerm,
+            status: statusFilter
+        });
+        
+        const response = await fetch(`/api/protestas/?${params}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            protestasData = data.protestas;
+            allStatusChoices = data.status_choices;
+            populateProtestasTable(data.protestas);
+            renderProtestasPagination(data.pagination);
+            populateStatusFilter(data.status_choices);
+        } else {
+            showProtestasError(data.error || 'Error al cargar protestas');
+        }
+    } catch (error) {
+        showProtestasError('Error de conexión: ' + error.message);
+    }
+}
+
+// Mostrar indicador de carga protestas
+function showProtestasLoading() {
+    const tbody = document.getElementById('protestasTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="7" class="loading-protestas">
+                <i class="fas fa-spinner fa-spin"></i> Cargando protestas...
+            </td>
+        </tr>
+    `;
+}
+
+// Mostrar error protestas
+function showProtestasError(message) {
+    const tbody = document.getElementById('protestasTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="7" class="no-protestas">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>${message}</p>
+            </td>
+        </tr>
+    `;
+}
+
+// Poblar tabla de protestas
+function populateProtestasTable(protestas) {
+    const tbody = document.getElementById('protestasTableBody');
+    
+    if (protestas.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-protestas">
+                    <i class="fas fa-inbox"></i>
+                    <p>No se encontraron protestas</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    protestas.forEach(protesta => {
+        const row = createProtestaRow(protesta);
+        tbody.appendChild(row);
+    });
+}
+
+// Crear fila de protesta
+function createProtestaRow(protesta) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>
+            <span class="protesta-folio">${protesta.folio}</span>
+        </td>
+        <td>${protesta.nombre_completo}</td>
+        <td title="${protesta.tramite_nombre}">
+            ${protesta.tramite_nombre.length > 30 ? 
+              protesta.tramite_nombre.substring(0, 30) + '...' : 
+              protesta.tramite_nombre}
+        </td>
+        <td>${protesta.area}</td>
+        <td>
+            <span class="protesta-status ${protesta.estatus}">${protesta.estatus_display}</span>
+        </td>
+        <td>${protesta.fecha_creacion}</td>
+        <td class="protesta-actions">
+            <button class="btn-action pdf" onclick="generateProtestaPDF(${protesta.id})" title="Descargar PDF">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+            <button class="btn-action status" onclick="openStatusModal(${protesta.id})" title="Cambiar Estatus">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-action detail" onclick="showProtestaDetail(${protesta.id})" title="Ver Detalles">
+                <i class="fas fa-eye"></i>
+            </button>
+        </td>
+    `;
+    return row;
+}
+
+// Renderizar paginación
+function renderProtestasPagination(pagination) {
+    const container = document.getElementById('protestasPagination');
+    
+    if (pagination.total_pages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = `
+        <div class="pagination-info">
+            Mostrando página ${pagination.current_page} de ${pagination.total_pages} 
+            (${pagination.total_count} protestas total)
+        </div>
+    `;
+    
+    // Botón anterior
+    html += `
+        <button class="pagination-btn ${!pagination.has_previous ? 'disabled' : ''}" 
+                onclick="goToProtestasPage(${pagination.previous_page})" 
+                ${!pagination.has_previous ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+    `;
+    
+    // Números de página
+    const startPage = Math.max(1, pagination.current_page - 2);
+    const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        html += `
+            <button class="pagination-btn ${i === pagination.current_page ? 'active' : ''}" 
+                    onclick="goToProtestasPage(${i})">
+                ${i}
+            </button>
+        `;
+    }
+    
+    // Botón siguiente
+    html += `
+        <button class="pagination-btn ${!pagination.has_next ? 'disabled' : ''}" 
+                onclick="goToProtestasPage(${pagination.next_page})" 
+                ${!pagination.has_next ? 'disabled' : ''}>
+            Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// Ir a página específica
+function goToProtestasPage(page) {
+    if (page && page > 0) {
+        currentProtestasPage = page;
+        loadProtestas();
+    }
+}
+
+// Poblar filtro de estatus
+function populateStatusFilter(statusChoices) {
+    const select = document.getElementById('statusFilter');
+    
+    // Limpiar opciones existentes excepto la primera
+    while (select.children.length > 1) {
+        select.removeChild(select.lastChild);
+    }
+    
+    statusChoices.forEach(choice => {
+        const option = document.createElement('option');
+        option.value = choice.value;
+        option.textContent = choice.label;
+        select.appendChild(option);
+    });
+}
+
+// Generar PDF de protesta
+async function generateProtestaPDF(protestaId) {
+    try {
+        // Mostrar indicador de carga
+        showAlert('Generando PDF...', 'info');
+        
+        const response = await fetch(`/api/protesta/${protestaId}/pdf/`);
+        
+        if (response.ok) {
+            // Crear enlace de descarga
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Protesta_${getProtestaFolio(protestaId)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showAlert('PDF generado exitosamente', 'success');
+        } else {
+            const errorData = await response.json();
+            showAlert('Error al generar PDF: ' + errorData.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al generar PDF: ' + error.message, 'error');
+    }
+}
+
+// Obtener folio de protesta por ID
+function getProtestaFolio(protestaId) {
+    const protesta = protestasData.find(p => p.id === protestaId);
+    return protesta ? protesta.folio : 'protesta';
+}
+
+// Abrir modal para cambiar estatus
+function openStatusModal(protestaId) {
+    const protesta = protestasData.find(p => p.id === protestaId);
+    if (!protesta) return;
+    
+    currentEditProtestaId = protestaId;
+    
+    document.getElementById('statusModalFolio').textContent = protesta.folio;
+    document.getElementById('statusModalSolicitante').textContent = protesta.nombre_completo;
+    document.getElementById('statusModalCurrentStatus').textContent = protesta.estatus_display;
+    
+    // Poblar select de nuevo estatus
+    const select = document.getElementById('newStatus');
+    select.innerHTML = '';
+    
+    allStatusChoices.forEach(choice => {
+        if (choice.value !== protesta.estatus) { // No mostrar el estatus actual
+            const option = document.createElement('option');
+            option.value = choice.value;
+            option.textContent = choice.label;
+            select.appendChild(option);
+        }
+    });
+    
+    document.getElementById('statusModal').style.display = 'block';
+}
+
+// Cerrar modal de estatus
+function closeStatusModal() {
+    document.getElementById('statusModal').style.display = 'none';
+    currentEditProtestaId = null;
+}
+
+// Cambiar estatus de protesta
+document.getElementById('saveStatusBtn').addEventListener('click', async function() {
+    if (!currentEditProtestaId) return;
+    
+    const newStatus = document.getElementById('newStatus').value;
+    if (!newStatus) {
+        showAlert('Selecciona un nuevo estatus', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/protesta/status/update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                protesta_id: currentEditProtestaId,
+                estatus: newStatus
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            closeStatusModal();
+            loadProtestas(); // Recargar tabla
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al cambiar estatus: ' + error.message, 'error');
+    }
+});
+
+// Mostrar detalles de protesta
+function showProtestaDetail(protestaId) {
+    const protesta = protestasData.find(p => p.id === protestaId);
+    if (!protesta) return;
+    
+    const modalBody = document.getElementById('detailModalBody');
+    
+    modalBody.innerHTML = `
+        <div class="detail-section">
+            <h4>Información General</h4>
+            <div class="detail-grid">
+                <span class="detail-label">Folio:</span>
+                <span class="detail-value">${protesta.folio}</span>
+                <span class="detail-label">Fecha:</span>
+                <span class="detail-value">${protesta.fecha_creacion}</span>
+                <span class="detail-label">Estatus:</span>
+                <span class="detail-value">
+                    <span class="protesta-status ${protesta.estatus}">${protesta.estatus_display}</span>
+                </span>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Solicitante</h4>
+            <div class="detail-grid">
+                <span class="detail-label">Nombre:</span>
+                <span class="detail-value">${protesta.nombre_completo}</span>
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">${protesta.email}</span>
+                <span class="detail-label">Teléfono:</span>
+                <span class="detail-value">${protesta.telefono}</span>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Trámite</h4>
+            <div class="detail-grid">
+                <span class="detail-label">Nombre:</span>
+                <span class="detail-value">${protesta.tramite_nombre}</span>
+                <span class="detail-label">Área:</span>
+                <span class="detail-value">${protesta.area}</span>
+                <span class="detail-label">Servidor Público:</span>
+                <span class="detail-value">${protesta.servidor_publico}</span>
+            </div>
+        </div>
+        
+        <div class="detail-section">
+            <h4>Motivo</h4>
+            <div class="detail-grid">
+                <span class="detail-label">Motivo:</span>
+                <span class="detail-value">${protesta.motivo_display}</span>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('detailModal').style.display = 'block';
+}
+
+// Cerrar modal de detalles
+function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+}
+
+// === FUNCIONES PARA GRUPOS ===
+
+// Cargar datos de grupos
+async function loadGrupos() {
+    try {
+        showGruposLoading();
+        
+        const response = await fetch('/api/grupos/');
+        const data = await response.json();
+        
+        if (response.ok) {
+            gruposData = data.grupos;
+            populateGrupos(data.grupos);
+        } else {
+            showGruposError(data.error || 'Error al cargar grupos');
+        }
+    } catch (error) {
+        showGruposError('Error de conexión: ' + error.message);
+    }
+}
+
+// Mostrar indicador de carga grupos
+function showGruposLoading() {
+    const grupos = ['SUPER_ADMIN', 'ADMINISTRADOR', 'GESTOR_PROTESTAS', 'GESTOR_TRAMITES'];
+    
+    grupos.forEach(grupo => {
+        const container = document.getElementById(`usuarios-${grupo}`);
+        if (container) {
+            container.innerHTML = `
+                <div class="loading-grupos">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando...
+                </div>
+            `;
+        }
+    });
+}
+
+// Mostrar error grupos
+function showGruposError(message) {
+    const grupos = ['SUPER_ADMIN', 'ADMINISTRADOR', 'GESTOR_PROTESTAS', 'GESTOR_TRAMITES'];
+    
+    grupos.forEach(grupo => {
+        const container = document.getElementById(`usuarios-${grupo}`);
+        if (container) {
+            container.innerHTML = `
+                <div class="no-usuarios">
+                    <i class="fas fa-exclamation-triangle"></i> ${message}
+                </div>
+            `;
+        }
+    });
+}
+
+// Poblar grupos con usuarios
+function populateGrupos(grupos) {
+    const grupoKeys = ['SUPER_ADMIN', 'ADMINISTRADOR', 'GESTOR_PROTESTAS', 'GESTOR_TRAMITES'];
+    
+    grupoKeys.forEach(grupoKey => {
+        const usuarios = grupos[grupoKey] || [];
+        const countElement = document.getElementById(`count-${grupoKey}`);
+        const containerElement = document.getElementById(`usuarios-${grupoKey}`);
+        
+        if (countElement) {
+            countElement.textContent = usuarios.length;
+        }
+        
+        if (containerElement) {
+            if (usuarios.length === 0) {
+                containerElement.innerHTML = `
+                    <div class="no-usuarios">
+                        <i class="fas fa-user-slash"></i> Sin usuarios asignados
+                    </div>
+                `;
+            } else {
+                containerElement.innerHTML = '';
+                usuarios.forEach(usuario => {
+                    const usuarioElement = createUsuarioElement(usuario, grupoKey);
+                    containerElement.appendChild(usuarioElement);
+                });
+            }
+        }
+    });
+}
+
+// Crear elemento de usuario
+function createUsuarioElement(usuario, grupo) {
+    const div = document.createElement('div');
+    div.className = 'usuario-item';
+    div.innerHTML = `
+        <div class="usuario-nombre">${usuario.username}</div>
+        <div class="usuario-detalles">
+            <span class="usuario-area">${usuario.area || 'Sin área'}</span>
+            ${grupo !== 'SUPER_ADMIN' ? `<button class="btn-cambiar-grupo" onclick="openCambiarGrupoModal(${usuario.id}, '${usuario.username}', '${grupo}')">Cambiar</button>` : ''}
+        </div>
+    `;
+    return div;
+}
+
+// Abrir modal para cambiar grupo
+function openCambiarGrupoModal(userId, username, grupoActual) {
+    currentEditUserGrupoId = userId;
+    
+    const gruposDisplay = {
+        'SUPER_ADMIN': '👑 Super Administrador',
+        'ADMINISTRADOR': '🛡️ Administrador',
+        'GESTOR_PROTESTAS': '📋 Gestor de Protestas',
+        'GESTOR_TRAMITES': '📁 Gestor de Trámites'
+    };
+    
+    document.getElementById('modalUsuarioNombre').textContent = username;
+    document.getElementById('modalGrupoActual').textContent = gruposDisplay[grupoActual];
+    
+    // Configurar el select (sin SUPER_ADMIN para evitar problemas)
+    const select = document.getElementById('nuevoGrupo');
+    select.value = grupoActual !== 'SUPER_ADMIN' ? grupoActual : 'ADMINISTRADOR';
+    
+    // Deshabilitar la opción actual
+    Array.from(select.options).forEach(option => {
+        option.disabled = option.value === grupoActual;
+    });
+    
+    document.getElementById('cambiarGrupoModal').style.display = 'block';
+}
+
+// Cerrar modal cambiar grupo
+function closeCambiarGrupoModal() {
+    document.getElementById('cambiarGrupoModal').style.display = 'none';
+    currentEditUserGrupoId = null;
+}
+
+// Cambiar grupo de usuario
+document.getElementById('saveGrupoBtn').addEventListener('click', async function() {
+    if (!currentEditUserGrupoId) return;
+    
+    const nuevoGrupo = document.getElementById('nuevoGrupo').value;
+    if (!nuevoGrupo) {
+        showAlert('Selecciona un nuevo grupo', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cambiar-grupo/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: currentEditUserGrupoId,
+                nuevo_grupo: nuevoGrupo
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(data.message, 'success');
+            closeCambiarGrupoModal();
+            loadGrupos(); // Recargar grupos
+        } else {
+            showAlert(data.error, 'error');
+        }
+    } catch (error) {
+        showAlert('Error al cambiar grupo: ' + error.message, 'error');
+    }
+});
+
+// === FUNCIÓN PARA MOSTRAR ALERTAS ===
+
 // Función para mostrar alertas
 function showAlert(message, type) {
     // Crear el elemento de alerta
@@ -794,16 +2122,30 @@ function showAlert(message, type) {
     }, 5000);
 }
 
+// === CERRAR MODALES AL HACER CLIC FUERA ===
+
 // Cerrar modales al hacer clic fuera de ellos
 window.onclick = function(event) {
     const userModal = document.getElementById('userModal');
     const confirmModal = document.getElementById('confirmModal');
+    const statusModal = document.getElementById('statusModal');
+    const detailModal = document.getElementById('detailModal');
+    const cambiarGrupoModal = document.getElementById('cambiarGrupoModal');
     
     if (event.target === userModal) {
         closeUserModal();
     }
     if (event.target === confirmModal) {
         closeConfirmModal();
+    }
+    if (event.target === statusModal) {
+        closeStatusModal();
+    }
+    if (event.target === detailModal) {
+        closeDetailModal();
+    }
+    if (event.target === cambiarGrupoModal) {
+        closeCambiarGrupoModal();
     }
 }
 </script>

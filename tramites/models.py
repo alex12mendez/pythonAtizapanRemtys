@@ -16,11 +16,40 @@ class ClasificacionTramites(models.Model):
 
 
 class PerfilUsuario(models.Model):
+    GRUPOS_CHOICES = (
+        ('SUPER_ADMIN', 'Super Administrador'),
+        ('ADMINISTRADOR', 'Administrador'), 
+        ('GESTOR_PROTESTAS', 'Gestor de Protestas'),
+        ('GESTOR_TRAMITES', 'Gestor de Trámites'),
+    )
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     clasificacion = models.ForeignKey(ClasificacionTramites, on_delete=models.SET_NULL, null=True, blank=True)
+    grupo_usuario = models.CharField(max_length=20, choices=GRUPOS_CHOICES, default='GESTOR_TRAMITES')
 
     def __str__(self):
         return f'Perfil de {self.user.username}'
+
+# Actualizar también los signals para asignar grupo automáticamente
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        # Determinar grupo automáticamente
+        if instance.is_superuser:
+            grupo = 'SUPER_ADMIN'
+        else:
+            grupo = 'GESTOR_TRAMITES'
+        
+        PerfilUsuario.objects.create(user=instance, grupo_usuario=grupo)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    if hasattr(instance, 'perfilusuario'):
+        # Actualizar grupo si cambió el estatus de superuser
+        if instance.is_superuser and instance.perfilusuario.grupo_usuario != 'SUPER_ADMIN':
+            instance.perfilusuario.grupo_usuario = 'SUPER_ADMIN'
+            instance.perfilusuario.save()
+        instance.perfilusuario.save()
 
 
 # Signal para crear PerfilUsuario automáticamente cuando se crea un User
